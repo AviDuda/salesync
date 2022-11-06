@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    a {
+        @apply text-link hover:text-link-hover;
+    }
+
+    h1 {
+        @apply text-4xl;
+    }
+    h2 {
+        @apply text-3xl;
+    }
+    h3 {
+        @apply text-2xl;
+    }
+    h4 {
+        @apply text-xl;
+    }
+    h5 {
+        @apply text-lg;
+    }
+}
+
+@layer components {
+    input, textarea, select {
+        @apply px-1 text-sm border border-input-border bg-input-bg text-input-text focus:outline focus:outline-1 focus:outline-outline;
+    }
+    select {
+        @apply text-sm py-1 border;
+    }
+    select[multiple] {
+        @apply border max-h-64;
+    }
+    input[type="checkbox"] + label {
+        @apply ml-2;
+    }
+
+    a.link-button, button, [type="button"], [type="reset"], [type="submit"] {
+        @apply border rounded px-2 py-1 border-button-muted-border
+             text-button-muted-text bg-button-muted-bg hover:bg-button-muted-bg-hover hover:text-button-muted-text-hover
+             focus:outline outline-1 focus:outline-outline;
+    }
+    .button-primary {
+        @apply border-button-primary-border text-button-primary-text bg-button-primary-bg
+              hover:bg-button-primary-bg-hover hover:text-button-primary-text-hover;
+    }
+    .button-destructive {
+        @apply border-button-destructive-border text-button-destructive-text bg-button-destructive-bg
+              hover:bg-button-destructive-bg-hover hover:text-button-destructive-text-hover;
+    }
+    .button-muted {
+        @apply border-button-muted-border text-button-muted-text bg-button-muted-bg
+              hover:bg-button-muted-bg-hover hover:text-button-muted-text-hover;
+    }
+
+    th {
+        @apply text-start;
+    }
+
+    tbody > tr {
+        @apply hover:bg-zinc-800;
+    }
+}

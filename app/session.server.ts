@@ -1,3 +1,5 @@
+import { UserRole } from "@prisma/client";
+import type { Session } from "@remix-run/node";
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
 import invariant from "tiny-invariant";
 
@@ -5,6 +7,8 @@ import type { User } from "~/models/user.server";
 import { getUserById } from "~/models/user.server";
 
 invariant(process.env.SESSION_SECRET, "SESSION_SECRET must be set");
+
+export const SessionFlashGlobalMessage = "globalMessage";
 
 export const sessionStorage = createCookieSessionStorage({
   cookie: {
@@ -22,6 +26,14 @@ const USER_SESSION_KEY = "userId";
 export async function getSession(request: Request) {
   const cookie = request.headers.get("Cookie");
   return sessionStorage.getSession(cookie);
+}
+
+export async function getSessionKey(request: Request, name: string) {
+  const session = await getSession(request);
+  return session.get(name);
+}
+export async function getSessionGlobalMessage(request: Request) {
+  return getSessionKey(request, SessionFlashGlobalMessage);
 }
 
 export async function getUserId(
@@ -52,6 +64,14 @@ export async function requireUserId(
     throw redirect(`/login?${searchParams}`);
   }
   return userId;
+}
+
+export async function requireAdminUser(request: Request) {
+  const user = await requireUser(request);
+  if (user.role !== UserRole.Admin) {
+    throw redirect("/", 403);
+  }
+  return user;
 }
 
 export async function requireUser(request: Request) {
@@ -94,4 +114,12 @@ export async function logout(request: Request) {
       "Set-Cookie": await sessionStorage.destroySession(session),
     },
   });
+}
+
+export async function setHeadersForSessionCommit(session: Session) {
+  return {
+    headers: {
+      "Set-Cookie": await sessionStorage.commitSession(session),
+    },
+  };
 }

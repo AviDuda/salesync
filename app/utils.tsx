@@ -1,5 +1,6 @@
 import { useMatches } from "@remix-run/react";
-import { useMemo } from "react";
+import { format } from "date-fns";
+import { Fragment, useMemo } from "react";
 
 import type { User } from "~/models/user.server";
 
@@ -33,15 +34,15 @@ export function safeRedirect(
  * @param {string} id The route id
  * @returns {JSON|undefined} The router data or undefined if not found
  */
-export function useMatchesData(
+export function useMatchesData<TData = Record<string, unknown>>(
   id: string
-): Record<string, unknown> | undefined {
+): TData | undefined {
   const matchingRoutes = useMatches();
   const route = useMemo(
     () => matchingRoutes.find((route) => route.id === id),
     [matchingRoutes, id]
   );
-  return route?.data;
+  return route?.data as TData;
 }
 
 function isUser(user: any): user is User {
@@ -68,4 +69,23 @@ export function useUser(): User {
 
 export function validateEmail(email: unknown): email is string {
   return typeof email === "string" && email.length > 3 && email.includes("@");
+}
+
+export function dateToYearMonthDay(date: Date) {
+  return format(date, "yyyy-MM-dd");
+}
+
+export function datetimeToDatetimeLocalInput(date: Date) {
+  return format(date, "yyyy-MM-dd'T'HH:mm");
+}
+
+export function nl2br(text: string) {
+  return text.split("\n").map((item, key) => {
+    return (
+      <Fragment key={key}>
+        {item}
+        <br />
+      </Fragment>
+    );
+  });
 }
