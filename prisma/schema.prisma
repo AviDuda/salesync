@@ -47,6 +47,7 @@ enum PlatformReleaseState {
 enum EventAppPlatformStatus {
   NO_Candidate
   NO_Negotiating
+  NO_Unknown
   NO_RejectedByStudio
   NO_RejectedByCoordinators
   NO_RejectedByPlatformHolder
