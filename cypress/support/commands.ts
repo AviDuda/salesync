@@ -4,6 +4,14 @@ declare global {
   namespace Cypress {
     interface Chainable {
       /**
+       * Signs up as a user.
+       *
+       * @returns {typeof login}
+       * @memberof Chainable
+       */
+      signup: typeof signup;
+
+      /**
        * Logs in with a random user. Yields the user and adds an alias to the user
        *
        * @returns {typeof login}
@@ -42,6 +50,18 @@ declare global {
   }
 }
 
+function signup({
+  email = faker.internet.email(undefined, undefined, "example.com"),
+}: {
+  email?: string;
+} = {}) {
+  cy.then(() => ({ email })).as("userSignup");
+  cy.exec(
+    `pnpm exec ts-node --require tsconfig-paths/register ./cypress/support/create-user.ts "${email}"`
+  );
+  return cy.get("@userSignup");
+}
+
 function login({
   email = faker.internet.email(undefined, undefined, "example.com"),
 }: {
@@ -49,7 +69,7 @@ function login({
 } = {}) {
   cy.then(() => ({ email })).as("user");
   cy.exec(
-    `pnpm exec ts-node --require tsconfig-paths/register ./cypress/support/create-user.ts "${email}"`
+    `pnpm exec ts-node --require tsconfig-paths/register ./cypress/support/create-user-and-login.ts "${email}"`
   ).then(({ stdout }) => {
     const cookieValue = stdout
       .replace(/.*<cookie>(?<cookieValue>.*)<\/cookie>.*/s, "$<cookieValue>")
@@ -90,6 +110,7 @@ function visitAndCheck(url: string, waitTime: number = 1000) {
   cy.location("pathname").should("contain", url).wait(waitTime);
 }
 
+Cypress.Commands.add("signup", signup);
 Cypress.Commands.add("login", login);
 Cypress.Commands.add("cleanupUser", cleanupUser);
 Cypress.Commands.add("visitAndCheck", visitAndCheck);
