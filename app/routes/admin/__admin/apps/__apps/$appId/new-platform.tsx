@@ -11,11 +11,11 @@ import { zfd } from "zod-form-data";
 import EmptyOption from "~/components/EmptyOption";
 import { MaxLinkCount } from "~/config";
 import { prisma } from "~/db.server";
-import { requireUserId } from "~/session.server";
+import { requireAdminUser } from "~/session.server";
 import type { PageHandle } from "~/types/remix";
 
 export async function action({ request, params }: ActionArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   const appId = params.appId;
   invariant(appId, "Invalid app ID");
 
@@ -92,7 +92,7 @@ export async function action({ request, params }: ActionArgs) {
 }
 
 export async function loader({ request, params }: LoaderArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   invariant(params.appId, "Invalid app ID");
 
   const platforms = await prisma.platform.findMany({

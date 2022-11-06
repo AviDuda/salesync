@@ -3,11 +3,11 @@ import type { LoaderArgs, SerializeFrom } from "@remix-run/server-runtime";
 import { json } from "@remix-run/server-runtime";
 import invariant from "tiny-invariant";
 import { prisma } from "~/db.server";
-import { requireUserId } from "~/session.server";
+import { requireAdminUser } from "~/session.server";
 import type { PageHandle } from "~/types/remix";
 
 export async function loader({ request, params }: LoaderArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   invariant(params.userId, "Invalid user ID");
   const user = await prisma.user.findUnique({
     where: { id: params.userId },

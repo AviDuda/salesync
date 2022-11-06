@@ -9,7 +9,7 @@ import { zfd } from "zod-form-data";
 import EmptyOption from "~/components/EmptyOption";
 import { MaxLinkCount } from "~/config";
 import { prisma } from "~/db.server";
-import { requireUserId } from "~/session.server";
+import { requireAdminUser } from "~/session.server";
 import type { PageHandle } from "~/types/remix";
 import { useMatchesData } from "~/utils";
 import type { Loader } from "../$studioId";
@@ -20,7 +20,7 @@ enum Intent {
 }
 
 export async function action({ request, params }: ActionArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   const { studioId } = params;
   invariant(studioId, "Invalid studio ID");
 
@@ -111,7 +111,7 @@ export async function action({ request, params }: ActionArgs) {
 }
 
 export async function loader({ request, params }: LoaderArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   invariant(params.studioId, "Invalid studio ID");
   return null;
 }

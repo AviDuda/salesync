@@ -3,10 +3,10 @@ import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { omit } from "lodash";
 import { prisma } from "~/db.server";
-import { requireUserId } from "~/session.server";
+import { requireAdminUser } from "~/session.server";
 
 export async function loader({ request }: LoaderArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   const platforms = (
     await prisma.platform.findMany({
       include: {

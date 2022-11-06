@@ -3,12 +3,12 @@ import type { LoaderArgs, SerializeFrom } from "@remix-run/server-runtime";
 import { json } from "@remix-run/server-runtime";
 import invariant from "tiny-invariant";
 import { prisma } from "~/db.server";
-import { requireUserId } from "~/session.server";
+import { requireAdminUser } from "~/session.server";
 import type { PageHandle } from "~/types/remix";
 import { nl2br } from "~/utils";
 
 export async function loader({ request, params }: LoaderArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   invariant(params.platformId, "Invalid platform ID");
   const platform = await prisma.platform.findUnique({
     where: { id: params.platformId },

@@ -4,16 +4,16 @@ import { json } from "@remix-run/server-runtime";
 import invariant from "tiny-invariant";
 import EmptyOption from "~/components/EmptyOption";
 import { prisma } from "~/db.server";
-import { requireUserId } from "~/session.server";
+import { requireAdminUser } from "~/session.server";
 import { getApps } from "../../apps";
 
 export async function action({ request, params }: ActionArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   invariant(params.eventId, "Invalid event ID");
 }
 
 export async function loader({ request, params }: LoaderArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   invariant(params.eventId, "Invalid event ID");
 
   const { appsMap } = await getApps(params.eventId);

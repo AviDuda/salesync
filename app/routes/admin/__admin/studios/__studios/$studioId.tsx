@@ -19,7 +19,7 @@ import invariant from "tiny-invariant";
 import { z } from "zod";
 import { zfd } from "zod-form-data";
 import { prisma } from "~/db.server";
-import { requireUserId } from "~/session.server";
+import { requireAdminUser } from "~/session.server";
 import type { PageHandle } from "~/types/remix";
 import { nl2br } from "~/utils";
 
@@ -28,7 +28,7 @@ enum Intent {
   RemoveMember = "remove-member",
 }
 export async function action({ request, params }: ActionArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   invariant(params.studioId, "Invalid studio ID");
 
   const formData = await request.formData();
@@ -76,7 +76,7 @@ export async function action({ request, params }: ActionArgs) {
   throw new Error("Invalid intent");
 }
 export async function loader({ request, params }: LoaderArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   invariant(params.studioId, "Invalid studio ID");
 
   const studioResult = await prisma.studio.findUnique({

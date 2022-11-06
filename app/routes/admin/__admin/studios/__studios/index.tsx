@@ -2,10 +2,10 @@ import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { prisma } from "~/db.server";
-import { requireUserId } from "~/session.server";
+import { requireAdminUser } from "~/session.server";
 
 export async function loader({ request }: LoaderArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   const studios = await prisma.studio.findMany({
     select: {
       _count: { select: { apps: true, members: true } },

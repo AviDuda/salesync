@@ -4,11 +4,11 @@ import { typedjson, useTypedLoaderData } from "remix-typedjson";
 import type { UseDataFunctionReturn } from "remix-typedjson/dist/remix";
 import invariant from "tiny-invariant";
 import { prisma } from "~/db.server";
-import { requireUserId } from "~/session.server";
+import { requireAdminUser } from "~/session.server";
 import type { PageHandle } from "~/types/remix";
 
 export async function loader({ request, params }: LoaderArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   invariant(params.eventId, "Invalid event ID");
   invariant(params.platformId, "Invalid platform ID");
 

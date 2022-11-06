@@ -1,8 +1,8 @@
 import type { LoaderArgs } from "@remix-run/server-runtime";
-import { requireUserId } from "~/session.server";
+import { requireAdminUser } from "~/session.server";
 
 export async function loader({ request }: LoaderArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   return null;
 }
 export default function NotFound() {

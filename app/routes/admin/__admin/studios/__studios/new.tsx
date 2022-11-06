@@ -7,11 +7,11 @@ import { z } from "zod";
 import { zfd } from "zod-form-data";
 import { MaxLinkCount } from "~/config";
 import { prisma } from "~/db.server";
-import { requireUserId } from "~/session.server";
+import { requireAdminUser } from "~/session.server";
 import type { PageHandle } from "~/types/remix";
 
 export async function action({ request, params }: ActionArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
 
   const schema = zfd.formData({
     name: zfd.text(),
@@ -87,7 +87,7 @@ export async function action({ request, params }: ActionArgs) {
 }
 
 export async function loader({ request, params }: LoaderArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   return null;
 }
 

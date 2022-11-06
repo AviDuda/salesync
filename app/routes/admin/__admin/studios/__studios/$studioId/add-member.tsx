@@ -6,11 +6,11 @@ import invariant from "tiny-invariant";
 import { z } from "zod";
 import { zfd } from "zod-form-data";
 import { prisma } from "~/db.server";
-import { requireUserId } from "~/session.server";
+import { requireAdminUser } from "~/session.server";
 import type { PageHandle } from "~/types/remix";
 
 export async function action({ request, params }: ActionArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   invariant(params.studioId, "Invalid studio ID");
 
   const schema = zfd.formData({
@@ -44,7 +44,7 @@ export async function action({ request, params }: ActionArgs) {
 }
 
 export async function loader({ request, params }: LoaderArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   invariant(params.studioId, "Invalid studio ID");
 
   const studio = await prisma.studio.findFirstOrThrow({

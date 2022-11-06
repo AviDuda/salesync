@@ -1,10 +1,10 @@
 import { Link } from "@remix-run/react";
 import type { LoaderArgs } from "@remix-run/server-runtime";
 import invariant from "tiny-invariant";
-import { requireUserId } from "~/session.server";
+import { requireAdminUser } from "~/session.server";
 
 export async function loader({ request, params }: LoaderArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   invariant(params.platformId, "Invalid platform ID");
   return null;
 }

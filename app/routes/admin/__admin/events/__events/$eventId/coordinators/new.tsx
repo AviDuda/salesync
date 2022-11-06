@@ -6,11 +6,11 @@ import invariant from "tiny-invariant";
 import { zfd } from "zod-form-data";
 import EmptyOption from "~/components/EmptyOption";
 import { prisma } from "~/db.server";
-import { requireUserId } from "~/session.server";
+import { requireAdminUser } from "~/session.server";
 import type { PageHandle } from "~/types/remix";
 
 export async function action({ request, params }: ActionArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   invariant(params.eventId, "Invalid event ID");
 
   const schema = zfd.formData({
@@ -28,7 +28,7 @@ export async function action({ request, params }: ActionArgs) {
 }
 
 export async function loader({ request, params }: LoaderArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   invariant(params.eventId, "Invalid event ID");
 
   const users = await prisma.user.findMany({

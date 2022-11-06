@@ -9,10 +9,10 @@ import { z } from "zod";
 import { zfd } from "zod-form-data";
 import EmptyOption from "~/components/EmptyOption";
 import { prisma } from "~/db.server";
-import { requireUserId } from "~/session.server";
+import { requireAdminUser } from "~/session.server";
 
 export async function action({ request, params }: ActionArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   const eventId = params.eventId;
   invariant(eventId, "Invalid event ID");
 
@@ -93,7 +93,7 @@ export async function action({ request, params }: ActionArgs) {
 }
 
 export async function loader({ request, params }: LoaderArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   invariant(params.eventId, "Invalid event ID");
 
   const { searchParams } = new URL(request.url);

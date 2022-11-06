@@ -2,10 +2,10 @@ import { Link, useLoaderData } from "@remix-run/react";
 import type { LoaderArgs } from "@remix-run/server-runtime";
 import { json } from "@remix-run/server-runtime";
 import { prisma } from "~/db.server";
-import { requireUserId } from "~/session.server";
+import { requireAdminUser } from "~/session.server";
 
 export async function loader({ request }: LoaderArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   const users = await prisma.user.findMany({
     include: {
       coordinatorForEvents: { include: { event: { select: { name: true } } } },

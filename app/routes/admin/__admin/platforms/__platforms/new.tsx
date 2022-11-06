@@ -4,11 +4,11 @@ import { redirect } from "@remix-run/server-runtime";
 import { z } from "zod";
 import { zfd } from "zod-form-data";
 import { prisma } from "~/db.server";
-import { requireUserId } from "~/session.server";
+import { requireAdminUser } from "~/session.server";
 import type { PageHandle } from "~/types/remix";
 
 export async function action({ request }: ActionArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
 
   const schema = zfd.formData({
     name: zfd.text(),
@@ -27,7 +27,7 @@ export async function action({ request }: ActionArgs) {
 }
 
 export async function loader({ request }: LoaderArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   return null;
 }
 

@@ -5,10 +5,10 @@ import type {
 } from "@remix-run/server-runtime";
 import type { ReactNode } from "react";
 import { z } from "zod";
-import { requireUserId } from "~/session.server";
+import { requireAdminUser } from "~/session.server";
 
 export async function loader({ request }: LoaderArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   return null;
 }
 

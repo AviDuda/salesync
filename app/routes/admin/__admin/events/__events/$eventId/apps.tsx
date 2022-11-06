@@ -10,7 +10,7 @@ import invariant from "tiny-invariant";
 import { z } from "zod";
 import { zfd } from "zod-form-data";
 import { prisma } from "~/db.server";
-import { requireUserId } from "~/session.server";
+import { requireAdminUser } from "~/session.server";
 import type { PageHandle } from "~/types/remix";
 import qs from "qs";
 import type { Entries } from "type-fest";
@@ -60,7 +60,7 @@ const actionSchema = z.union([
 ]);
 
 export async function action({ request, params }: ActionArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   invariant(params.eventId, "Invalid event ID");
 
   const formData = await request.formData();
@@ -153,7 +153,7 @@ export async function getApps(eventId: string) {
 }
 
 export async function loader({ request, params }: LoaderArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   invariant(params.eventId, "Invalid event ID");
 
   const { appsMap, platformsMap } = await getApps(params.eventId);

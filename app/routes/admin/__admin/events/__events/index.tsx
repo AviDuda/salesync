@@ -4,11 +4,11 @@ import { formatISO, isFuture, isPast } from "date-fns";
 import { Fragment } from "react";
 import { typedjson, useTypedLoaderData } from "remix-typedjson";
 import { prisma } from "~/db.server";
-import { requireUserId } from "~/session.server";
+import { requireAdminUser } from "~/session.server";
 import { dateToYearMonthDay } from "~/utils";
 
 export async function loader({ request }: LoaderArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   const allEvents = await prisma.event.findMany({
     include: { eventAppPlatforms: { select: { appPlatformId: true } } },
     orderBy: [{ runningFrom: "desc" }, { runningTo: "desc" }],

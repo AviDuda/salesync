@@ -18,7 +18,7 @@ import ConformInput from "~/components/ConformInput";
 import ConformSelect from "~/components/ConformSelect";
 import EmptyOption from "~/components/EmptyOption";
 import { prisma } from "~/db.server";
-import { requireUserId } from "~/session.server";
+import { requireAdminUser } from "~/session.server";
 import type { PageHandle } from "~/types/remix";
 import { datetimeToDatetimeLocalInput } from "~/utils";
 import { preprocessDate } from "~/zod";
@@ -43,7 +43,7 @@ const schema = z
 type Schema = z.infer<typeof schema>;
 
 export async function action({ request, params }: ActionArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   invariant(params.eventId, "Invalid event ID");
 
   const formData = await request.formData();
@@ -71,7 +71,7 @@ export async function action({ request, params }: ActionArgs) {
 }
 
 export async function loader({ request, params }: LoaderArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   invariant(params.eventId, "Invalid event ID");
 
   const event = await prisma.event.findUnique({

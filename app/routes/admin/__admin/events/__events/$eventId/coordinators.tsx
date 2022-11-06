@@ -4,11 +4,11 @@ import { json } from "@remix-run/server-runtime";
 import invariant from "tiny-invariant";
 import { zfd } from "zod-form-data";
 import { prisma } from "~/db.server";
-import { requireUserId } from "~/session.server";
+import { requireAdminUser } from "~/session.server";
 import type { PageHandle } from "~/types/remix";
 
 export async function action({ request, params }: ActionArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   invariant(params.eventId, "Invalid event ID");
 
   const schema = zfd.formData({
@@ -25,7 +25,7 @@ export async function action({ request, params }: ActionArgs) {
 }
 
 export async function loader({ request, params }: LoaderArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   invariant(params.eventId, "Invalid event ID");
   const coordinators = await prisma.eventCoordinator.findMany({
     where: { eventId: params.eventId },

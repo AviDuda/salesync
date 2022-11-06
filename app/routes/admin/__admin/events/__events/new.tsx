@@ -17,7 +17,7 @@ import ConformInput from "~/components/ConformInput";
 import ConformSelect from "~/components/ConformSelect";
 import EmptyOption from "~/components/EmptyOption";
 import { prisma } from "~/db.server";
-import { requireUserId } from "~/session.server";
+import { requireAdminUser } from "~/session.server";
 import type { PageHandle } from "~/types/remix";
 import { preprocessDate } from "~/zod";
 
@@ -41,7 +41,7 @@ const schema = z
 type Schema = z.infer<typeof schema>;
 
 export async function action({ request, params }: ActionArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
 
   const formData = await request.formData();
   const submission = parse<Schema>(formData);
@@ -67,7 +67,7 @@ export async function action({ request, params }: ActionArgs) {
 }
 
 export async function loader({ request }: LoaderArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   return null;
 }
 

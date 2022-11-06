@@ -6,7 +6,7 @@ import invariant from "tiny-invariant";
 import { z } from "zod";
 import { zfd } from "zod-form-data";
 import { prisma } from "~/db.server";
-import { requireUserId } from "~/session.server";
+import { requireAdminUser } from "~/session.server";
 import type { PageHandle } from "~/types/remix";
 import { useMatchesData } from "~/utils";
 import type { Loader } from "../$appId";
@@ -17,7 +17,7 @@ enum Intent {
 }
 
 export async function action({ request, params }: ActionArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   invariant(params.appId, "Invalid app ID");
 
   const schema = z.union([
@@ -57,7 +57,7 @@ export async function action({ request, params }: ActionArgs) {
 }
 
 export async function loader({ request, params }: LoaderArgs) {
-  await requireUserId(request);
+  await requireAdminUser(request);
   invariant(params.appId, "Invalid app ID");
 
   const studios = await prisma.studio.findMany({
