@@ -12,8 +12,8 @@ import { create } from "./create-user";
 
 installGlobals();
 
-async function createAndLogin(email: string) {
-  const user = await create(email);
+async function createAndLogin(email: string, role: string) {
+  const user = await create(email, role);
 
   const response = await createUserSession({
     request: new Request("test://test"),
@@ -38,4 +38,4 @@ async function createAndLogin(email: string) {
   );
 }
 
-createAndLogin(process.argv[2]);
+createAndLogin(process.argv[2], process.argv[3]);

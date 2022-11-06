@@ -8,10 +8,11 @@ import { installGlobals } from "@remix-run/node";
 import { typedjson } from "remix-typedjson";
 
 import { createUser } from "~/models/user.server";
+import type { UserRole } from "~/prisma-client";
 
 installGlobals();
 
-export async function create(email: string) {
+export async function create(email: string, role: string) {
   if (!email) {
     throw new Error("email required for login");
   }
@@ -20,7 +21,7 @@ export async function create(email: string) {
   }
 
   const user = await createUser(
-    { email, name: "Test User" },
+    { email, name: "Test User", role: role as UserRole },
     "myreallystrongpassword"
   );
 
@@ -35,4 +36,4 @@ ${typedjson(user)}
   return user;
 }
 
-create(process.argv[2]);
+create(process.argv[2], process.argv[3]);

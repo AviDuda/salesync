@@ -52,24 +52,28 @@ declare global {
 
 function signup({
   email = faker.internet.email(undefined, undefined, "example.com"),
+  role = "User",
 }: {
   email?: string;
+  role?: "Admin" | "Developer" | "User";
 } = {}) {
   cy.then(() => ({ email })).as("userSignup");
   cy.exec(
-    `pnpm exec ts-node --require tsconfig-paths/register ./cypress/support/create-user.ts "${email}"`
+    `pnpm exec ts-node --require tsconfig-paths/register ./cypress/support/create-user.ts "${email}" "${role}"`
   );
   return cy.get("@userSignup");
 }
 
 function login({
   email = faker.internet.email(undefined, undefined, "example.com"),
+  role = "User",
 }: {
   email?: string;
+  role?: "Admin" | "Developer" | "User";
 } = {}) {
   cy.then(() => ({ email })).as("user");
   cy.exec(
-    `pnpm exec ts-node --require tsconfig-paths/register ./cypress/support/create-user-and-login.ts "${email}"`
+    `pnpm exec ts-node --require tsconfig-paths/register ./cypress/support/create-user-and-login.ts "${email}" "${role}"`
   ).then(({ stdout }) => {
     const cookieValue = stdout
       .replace(/.*<cookie>(?<cookieValue>.*)<\/cookie>.*/s, "$<cookieValue>")

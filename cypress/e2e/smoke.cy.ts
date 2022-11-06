@@ -7,7 +7,7 @@ describe("smoke tests", () => {
 
   it("should allow you to register and login", () => {
     const email = `${faker.internet.userName()}@example.com`;
-    cy.signup({ email });
+    cy.signup({ email, role: "Admin" });
     const loginForm = {
       email: email,
       password: "myreallystrongpassword",
