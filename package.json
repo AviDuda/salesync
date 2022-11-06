@@ -20,7 +20,7 @@
     "docker": "docker-compose up -d",
     "generate:css": "tailwindcss -i ./app/styles/global.css -o ./app/styles/tailwind.css",
     "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint .",
-    "postinstall": "prisma generate",
+    "postinstall": "./postinstall.sh",
     "start": "cross-env NODE_ENV=production node ./build/server.js",
     "start:mocks": "cross-env NODE_ENV=production node --require ./mocks --require dotenv/config ./build/server.js",
     "test": "vitest",
