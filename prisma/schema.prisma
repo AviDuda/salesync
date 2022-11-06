@@ -4,18 +4,80 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["interactiveTransactions"]
+}
+
+enum UrlType {
+  /// Default URL type
+  Other
+  /// Links to store pages
+  StorePage
+  /// For example a Steam developer page
+  PlatformPresence
+  /// Twitter etc.
+  SocialMedia
+  /// Official company site
+  CompanySite
+}
+
+enum AppType {
+  Game
+  DLC
+  Soundtrack
+  Video
+  Art
+  Book
+  Software
+  Hardware
+  Other
+}
+
+/// Release state for an app on a specific platform
+enum PlatformReleaseState {
+  Released
+  NewRelease
+  Upcoming
+  EarlyAccess
+  Unknown
+}
+
+/// `NO_` prefix means it's not considered as participating, `OK_` means it is participating
+enum EventAppPlatformStatus {
+  NO_Candidate
+  NO_Negotiating
+  NO_RejectedByStudio
+  NO_RejectedByCoordinators
+  NO_RejectedByPlatformHolder
+  OK_Confirmed
+  OK_MissingData
+  OK_Ready
+}
+
+enum EventVisibility {
+  Public
+  Participants
+  Coordinators
+}
+
+enum UserRole {
+  User
+  /// Admin role has overrides for permissions
+  Admin
 }
 
 model User {
   id    String @id @default(cuid())
   email String @unique
+  name  String
+
+  password             Password?
+  role                 UserRole           @default(User)
+  studios              StudioMember[]
+  coordinatorForEvents EventCoordinator[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  password Password?
-  notes    Note[]
 }
 
 model Password {
@@ -23,16 +85,176 @@ model Password {
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model Note {
-  id    String @id @default(cuid())
-  title String
-  body  String
+model Studio {
+  id      String  @id @default(cuid())
+  // name can't be unique as studios may have the same name
+  name    String
+  comment String?
+
+  members       StudioMember[] @relation("StudioMembers")
+  mainContact   StudioMember?  @relation("StudioMainContact", fields: [mainContactId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  mainContactId String?
+
+  apps  App[]
+  links StudioLink[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model StudioLink {
+  id       String @unique @default(cuid())
+  studio   Studio @relation(fields: [studioId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  studioId String
+
+  url     String
+  title   String
+  type    UrlType @default(Other)
+  comment String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Platforms like Steam, PS5 etc.
+model Platform {
+  id      String  @id @default(cuid())
+  name    String  @unique
+  url     String?
+  comment String?
+
+  /// Each app can have multiple platforms
+  appPlatforms AppPlatform[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model App {
+  id      String  @id @default(cuid())
+  // name can't be unique as apps by different studios may have the same name
+  name    String
+  comment String?
+
+  type AppType
+
+  studio   Studio @relation(fields: [studioId], references: [id])
+  studioId String
+
+  appPlatforms AppPlatform[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Platform for an app
+/// Includes additional platform-specific app info like if the app is F2P (can happen on mobile) and release state
+model AppPlatform {
+  id String @unique @default(cuid())
+
+  app        App      @relation(fields: [appId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  appId      String
+  platform   Platform @relation(fields: [platformId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  platformId String
+
+  // Some games may be F2P only on mobile so keep this info in app platform
+  isFreeToPlay Boolean
+
+  releaseState      PlatformReleaseState
+  eventAppPlatforms EventAppPlatform[]
+  links             AppPlatformLink[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId String
+  @@unique([appId, platformId])
+}
+
+model AppPlatformLink {
+  id String @unique @default(cuid())
+
+  appPlatform   AppPlatform @relation(fields: [appPlatformId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  appPlatformId String
+
+  url     String
+  title   String
+  type    UrlType @default(Other)
+  comment String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  runningFrom DateTime
+  runningTo   DateTime
+
+  visibility EventVisibility @default(Public)
+
+  /// Event coordinators can set up the event
+  coordinators EventCoordinator[]
+
+  /// Platform-specific participating apps
+  eventAppPlatforms EventAppPlatform[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EventCoordinator {
+  id String @id @default(cuid())
+
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId  String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  eventId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, eventId])
+}
+
+/// Participating apps in events are platform-specific
+model EventAppPlatform {
+  id String @id @default(cuid())
+
+  appPlatform   AppPlatform @relation(fields: [appPlatformId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  appPlatformId String
+  event         Event       @relation(fields: [eventId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  eventId       String
+
+  status  EventAppPlatformStatus
+  comment String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([appPlatformId, eventId])
+}
+
+model StudioMember {
+  id String @id @default(cuid())
+
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId   String
+  studio   Studio @relation("StudioMembers", fields: [studioId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  studioId String
+
+  position String
+  comment  String?
+
+  mainContactFor Studio[] @relation("StudioMainContact")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, studioId])
 }
