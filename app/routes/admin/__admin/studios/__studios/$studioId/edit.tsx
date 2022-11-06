@@ -1,5 +1,5 @@
-import type { Prisma } from "@prisma/client";
-import { UrlType } from "@prisma/client";
+import type { Prisma } from "~/prisma-client";
+import { UrlType } from "~/prisma-client";
 import { Form } from "@remix-run/react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
 import { redirect } from "@remix-run/server-runtime";

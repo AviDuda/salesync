@@ -17,7 +17,7 @@ import {
 import { formatError, validate } from "@conform-to/zod";
 import { z } from "zod";
 import ConformInput from "~/components/ConformInput";
-import { UserRole } from "@prisma/client";
+import { UserRole } from "~/prisma-client";
 import ConformSelect from "~/components/ConformSelect";
 import ConformForm from "~/components/ConformForm";
 import type { PageHandle } from "~/types/remix";

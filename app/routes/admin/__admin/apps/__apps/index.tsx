@@ -1,4 +1,4 @@
-import type { Event, Platform } from "@prisma/client";
+import type { Event, Platform } from "~/prisma-client";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";

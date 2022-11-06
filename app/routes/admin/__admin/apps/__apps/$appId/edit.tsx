@@ -1,4 +1,4 @@
-import { AppType } from "@prisma/client";
+import { AppType } from "~/prisma-client";
 import { Form, useLoaderData } from "@remix-run/react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
 import { redirect } from "@remix-run/server-runtime";

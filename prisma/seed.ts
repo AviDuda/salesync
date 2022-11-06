@@ -1,9 +1,9 @@
-import type { App, AppPlatform, Event, Prisma, User } from "@prisma/client";
-import { EventVisibility } from "@prisma/client";
-import { UrlType } from "@prisma/client";
-import { PlatformReleaseState } from "@prisma/client";
-import { AppType, EventAppPlatformStatus, UserRole } from "@prisma/client";
-import { PrismaClient } from "@prisma/client";
+import type { App, AppPlatform, Event, Prisma, User } from "~/prisma-client";
+import { EventVisibility } from "~/prisma-client";
+import { UrlType } from "~/prisma-client";
+import { PlatformReleaseState } from "~/prisma-client";
+import { AppType, EventAppPlatformStatus, UserRole } from "~/prisma-client";
+import { PrismaClient } from "~/prisma-client";
 import bcrypt from "bcryptjs";
 import { faker } from "@faker-js/faker";
 import { MaxLinkCount } from "~/config";

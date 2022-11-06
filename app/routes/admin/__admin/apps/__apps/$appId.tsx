@@ -1,6 +1,6 @@
-import type { Prisma } from "@prisma/client";
-import { PlatformReleaseState } from "@prisma/client";
-import { UrlType } from "@prisma/client";
+import type { Prisma } from "~/prisma-client";
+import { PlatformReleaseState } from "~/prisma-client";
+import { UrlType } from "~/prisma-client";
 import {
   Form,
   Link,

@@ -1,7 +1,7 @@
-import type { App, Prisma } from "@prisma/client";
-import { UrlType } from "@prisma/client";
-import { PlatformReleaseState } from "@prisma/client";
-import { AppType } from "@prisma/client";
+import type { App, Prisma } from "~/prisma-client";
+import { UrlType } from "~/prisma-client";
+import { PlatformReleaseState } from "~/prisma-client";
+import { AppType } from "~/prisma-client";
 import { Form, useLoaderData, useSearchParams } from "@remix-run/react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
 import { redirect } from "@remix-run/server-runtime";

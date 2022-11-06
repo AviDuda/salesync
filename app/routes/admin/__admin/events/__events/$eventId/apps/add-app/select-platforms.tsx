@@ -1,5 +1,5 @@
-import type { Prisma } from "@prisma/client";
-import { EventAppPlatformStatus } from "@prisma/client";
+import type { Prisma } from "~/prisma-client";
+import { EventAppPlatformStatus } from "~/prisma-client";
 import { Form, Link, useLoaderData } from "@remix-run/react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
 import { redirect } from "@remix-run/server-runtime";

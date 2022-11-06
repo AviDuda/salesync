@@ -1,55 +1,67 @@
 {
-    "typescript.tsdk": "node_modules/typescript/lib",
-    "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.updateImportsOnFileMove.enabled": "always",
 
-    "editor.formatOnSave": true,
-    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
-    "editor.codeActionsOnSave": {
-        "source.fixAll": true
-    },
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true
+  },
 
-    // required by the Prettier ESLint extension
-    "editor.formatOnPaste": false,
-    "editor.formatOnSaveMode": "file",
+  // required by the Prettier ESLint extension
+  "editor.formatOnPaste": false,
+  "editor.formatOnSaveMode": "file",
 
-    "eslint.alwaysShowStatus": true,
-    "eslint.packageManager": "pnpm",
-    "eslint.workingDirectories": [
-        {
-            "mode": "auto"
-        }
-    ],
-    "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
-
-    "[markdown]": {
-        "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
-    },
-    "[yaml]": {
-        "editor.autoIndent": "advanced"
-    },
-
-    // Tailwind
-    "files.associations": {
-        "*.css": "tailwindcss"
-    },
-    "[tailwindcss]": {
-        "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
-    },
-    "editor.quickSuggestions": {
-        "strings": true
-    },
-    // Use eslint-plugin-tailwindcss instead
-    "tailwindCSS.lint.recommendedVariantOrder": "ignore",
-    "[typescriptreact]": {
-        // Tailwind IntelliSense
-        // see https://github.com/tailwindlabs/tailwindcss/issues/7553
-        "tailwindCSS.experimental.classRegex": [
-            // someClassNameBlah="tw-something" or someclassNameBlah={"tw-something"}
-            "\\w*[cC]lassName\\w*={?\"([^\"]*)}?",
-            // classNames or cx
-            ["(?:class[Nn]ames|cx)\\(([^)]*)\\)", "\"([^\"]*)\""],
-            ["(?:class[Nn]ames|cx)\\(([^)]*)\\)", "'([^']*')"],
-            ["(?:class[Nn]ames|cx)\\(([^)]*)\\)", "`([^`]*`)"]
-        ]
+  "eslint.alwaysShowStatus": true,
+  "eslint.packageManager": "pnpm",
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
     }
+  ],
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+
+  "[markdown]": {
+    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+  },
+  "[yaml]": {
+    "editor.autoIndent": "advanced"
+  },
+
+  // Tailwind
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "[tailwindcss]": {
+    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+  },
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  // Use eslint-plugin-tailwindcss instead
+  "tailwindCSS.lint.recommendedVariantOrder": "ignore",
+  "[typescriptreact]": {
+    // Tailwind IntelliSense
+    // see https://github.com/tailwindlabs/tailwindcss/issues/7553
+    "tailwindCSS.experimental.classRegex": [
+      // someClassNameBlah="tw-something" or someclassNameBlah={"tw-something"}
+      "\\w*[cC]lassName\\w*={?\"([^\"]*)}?",
+      // classNames or cx
+      ["(?:class[Nn]ames|cx)\\(([^)]*)\\)", "\"([^\"]*)\""],
+      ["(?:class[Nn]ames|cx)\\(([^)]*)\\)", "'([^']*')"],
+      ["(?:class[Nn]ames|cx)\\(([^)]*)\\)", "`([^`]*`)"]
+    ]
+  },
+
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/*.code-search": true,
+    "app/prisma-client": true
+  }
 }

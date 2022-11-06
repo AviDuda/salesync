@@ -1,6 +1,6 @@
-import type { Prisma } from "@prisma/client";
-import { PlatformReleaseState } from "@prisma/client";
-import { UrlType } from "@prisma/client";
+import type { Prisma } from "~/prisma-client";
+import { PlatformReleaseState } from "~/prisma-client";
+import { UrlType } from "~/prisma-client";
 import { Form, Link, useLoaderData } from "@remix-run/react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
 import { json } from "@remix-run/server-runtime";

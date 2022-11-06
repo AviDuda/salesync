@@ -6,7 +6,7 @@ import {
   useForm,
 } from "@conform-to/react";
 import { formatError, validate } from "@conform-to/zod";
-import { EventVisibility } from "@prisma/client";
+import { EventVisibility } from "~/prisma-client";
 import { Form, useActionData } from "@remix-run/react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
 import { json } from "@remix-run/server-runtime";
