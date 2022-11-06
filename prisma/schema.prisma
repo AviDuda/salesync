@@ -63,7 +63,10 @@ enum EventVisibility {
 }
 
 enum UserRole {
+  /// No special permissions
   User
+  /// Can manage their studios and apps in them
+  Developer
   /// Admin role has overrides for permissions
   Admin
 }
