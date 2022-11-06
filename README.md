@@ -1,12 +1,6 @@
-# Remix Blues Stack
+# Sales Tool
 
-![The Remix Blues Stack](https://repository-images.githubusercontent.com/461012689/37d5bd8b-fa9c-4ab0-893c-f0a199d5012d)
-
-Learn more about [Remix Stacks](https://remix.run/stacks).
-
-```
-npx create-remix@latest --template remix-run/blues-stack
-```
+A tool for managing sale events for platforms like Steam.
 
 ## What's in the stack
 
@@ -24,68 +18,52 @@ npx create-remix@latest --template remix-run/blues-stack
 - Linting with [ESLint](https://eslint.org)
 - Static Types with [TypeScript](https://typescriptlang.org)
 
-Not a fan of bits of the stack? Fork it, change it, and use `npx create-remix --template your/repo`! Make it your own.
-
 ## Quickstart
-
-Click this button to create a [Gitpod](https://gitpod.io) workspace with the project set up, Postgres started, and Fly pre-installed
-
-[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/from-referrer/)
 
 ## Development
 
-- This step only applies if you've opted out of having the CLI install dependencies for you:
-
-  ```sh
-  npx remix init
-  ```
+- Install [pnpm](https://pnpm.io/)
 
 - Start the Postgres Database in [Docker](https://www.docker.com/get-started):
 
   ```sh
-  npm run docker
+  pnpm run docker
   ```
 
-  > **Note:** The npm script will complete while Docker sets up the container in the background. Ensure that Docker has finished and your container is running before proceeding.
+  > **Note:** The pnpm script will complete while Docker sets up the container in the background. Ensure that Docker has finished and your container is running before proceeding.
 
 - Initial setup:
 
   ```sh
-  npm run setup
+  pnpm run db:dev:setup
   ```
 
 - Run the first build:
 
   ```sh
-  npm run build
+  pnpm run build
   ```
 
 - Start dev server:
 
   ```sh
-  npm run dev
+  pnpm run dev
   ```
 
 This starts your app in development mode, rebuilding assets on file changes.
 
 The database seed script creates a new user with some data you can use to get started:
 
-- Email: `rachel@remix.run`
-- Password: `racheliscool`
+- Email: `admin@example.com`
+- Password: `password`
 
 If you'd prefer not to use Docker, you can also use Fly's Wireguard VPN to connect to a development database (or even your production database). You can find the instructions to set up Wireguard [here](https://fly.io/docs/reference/private-networking/#install-your-wireguard-app), and the instructions for creating a development database [here](https://fly.io/docs/reference/postgres/).
 
-### Relevant code:
-
-This is a pretty simple note-taking app, but it's a good example of how you can build a full stack app with Prisma and Remix. The main functionality is creating users, logging in and out, and creating and deleting notes.
-
-- creating users, and logging in and out [./app/models/user.server.ts](./app/models/user.server.ts)
-- user sessions, and verifying them [./app/session.server.ts](./app/session.server.ts)
-- creating, and deleting notes [./app/models/note.server.ts](./app/models/note.server.ts)
+### Relevant code
 
 ## Deployment
 
-This Remix Stack comes with two GitHub Actions that handle automatically deploying your app to production and staging environments.
+This repo comes with two GitHub Actions that handle automatically deploying the app to production and staging environments.
 
 Prior to your first deployment, you'll need to do a few things:
 
@@ -102,11 +80,11 @@ Prior to your first deployment, you'll need to do a few things:
 - Create two apps on Fly, one for staging and one for production:
 
   ```sh
-  fly apps create sales-tool-c587
-  fly apps create sales-tool-c587-staging
+  fly apps create sale-events-tool
+  fly apps create sale-events-tool-staging
   ```
 
-  > **Note:** Once you've successfully created an app, double-check the `fly.toml` file to ensure that the `app` key is the name of the production app you created. This Stack [automatically appends a unique suffix at init](https://github.com/remix-run/blues-stack/blob/4c2f1af416b539187beb8126dd16f6bc38f47639/remix.init/index.js#L29) which may not match the apps you created on Fly. You will likely see [404 errors in your Github Actions CI logs](https://community.fly.io/t/404-failure-with-deployment-with-remix-blues-stack/4526/3) if you have this mismatch.
+  > **Note:** Once you've successfully created an app, double-check the `fly.toml` file to ensure that the `app` key is the name of the production app you created. You will likely see [404 errors in your Github Actions CI logs](https://community.fly.io/t/404-failure-with-deployment-with-remix-blues-stack/4526/3) if you have this mismatch.
 
 - Initialize Git.
 
@@ -125,14 +103,14 @@ Prior to your first deployment, you'll need to do a few things:
 - Add a `SESSION_SECRET` to your fly app secrets, to do this you can run the following commands:
 
   ```sh
-  fly secrets set SESSION_SECRET=$(openssl rand -hex 32) --app sales-tool-c587
-  fly secrets set SESSION_SECRET=$(openssl rand -hex 32) --app sales-tool-c587-staging
+  fly secrets set SESSION_SECRET=$(openssl rand -hex 32) --app sale-events-tool
+  fly secrets set SESSION_SECRET=$(openssl rand -hex 32) --app sale-events-tool-staging
   ```
 
   > **Note:** When creating the staging secret, you may get a warning from the Fly CLI that looks like this:
   >
-  > ```
-  > WARN app flag 'sales-tool-c587-staging' does not match app name in config file 'sales-tool-c587'
+  > ```text
+  > WARN app flag 'sale-events-tool-staging' does not match app name in config file 'sale-events-tool'
   > ```
   >
   > This simply means that the current directory contains a config that references the production app we created in the first step. Ignore this warning and proceed to create the secret.
@@ -142,11 +120,11 @@ Prior to your first deployment, you'll need to do a few things:
 - Create a database for both your staging and production environments. Run the following:
 
   ```sh
-  fly postgres create --name sales-tool-c587-db
-  fly postgres attach --app sales-tool-c587 sales-tool-c587-db
+  fly postgres create --name sale-events-tool-db
+  fly postgres attach --app sale-events-tool sale-events-tool-db
 
-  fly postgres create --name sales-tool-c587-staging-db
-  fly postgres attach --app sales-tool-c587-staging sales-tool-c587-staging-db
+  fly postgres create --name sale-events-tool-staging-db
+  fly postgres attach --app sale-events-tool-staging sale-events-tool-staging-db
   ```
 
   > **Note:** You'll get the same warning for the same reason when attaching the staging database that you did in the `fly set secret` step above. No worries. Proceed!
@@ -181,7 +159,7 @@ We use Cypress for our End-to-End tests in this project. You'll find those in th
 
 We use [`@testing-library/cypress`](https://testing-library.com/cypress) for selecting elements on the page semantically.
 
-To run these tests in development, run `npm run test:e2e:dev` which will start the dev server for the app as well as the Cypress client. Make sure the database is running in docker as described above.
+To run these tests in development, run `pnpm run test:e2e:dev` which will start the dev server for the app as well as the Cypress client. Make sure the database is running in docker as described above.
 
 We have a utility for testing authenticated features without having to go through the login flow:
 
@@ -206,7 +184,7 @@ For lower level tests of utilities and individual components, we use `vitest`. W
 
 ### Type Checking
 
-This project uses TypeScript. It's recommended to get TypeScript set up for your editor to get a really great in-editor experience with type checking and auto-complete. To run type checking across the whole project, run `npm run typecheck`.
+This project uses TypeScript. It's recommended to get TypeScript set up for your editor to get a really great in-editor experience with type checking and auto-complete. To run type checking across the whole project, run `pnpm run typecheck`.
 
 ### Linting
 
@@ -214,4 +192,4 @@ This project uses ESLint for linting. That is configured in `.eslintrc.js`.
 
 ### Formatting
 
-We use [Prettier](https://prettier.io/) for auto-formatting in this project. It's recommended to install an editor plugin (like the [VSCode Prettier plugin](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)) to get auto-formatting on save. There's also a `npm run format` script you can run to format all files in the project.
+We use [Prettier](https://prettier.io/) for auto-formatting in this project. It's recommended to install an editor plugin (like the [VSCode Prettier plugin](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)) to get auto-formatting on save. There's also a `pnpm run format` script you can run to format all files in the project.
