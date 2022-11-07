@@ -41,6 +41,7 @@ export async function action({ request, params }: ActionArgs) {
       intent: zfd.text(z.literal(Intent.SaveAppPlatform)),
       appPlatformId: zfd.text(),
       releaseState: zfd.text(z.nativeEnum(PlatformReleaseState)),
+      isEarlyAccess: zfd.text(z.literal("on").optional()),
       isFreeToPlay: zfd.text(z.literal("on").optional()),
       links: zfd
         .repeatable(
@@ -93,6 +94,7 @@ export async function action({ request, params }: ActionArgs) {
         where: { id: data.appPlatformId },
         data: {
           releaseState: data.releaseState,
+          isEarlyAccess: data.isEarlyAccess === "on",
           isFreeToPlay: data.isFreeToPlay === "on",
           links: {
             deleteMany: { appPlatformId: data.appPlatformId },
@@ -184,6 +186,7 @@ export default function AppPage() {
           <tr>
             <th>Platform</th>
             <th>Release state</th>
+            <th className="text-center">Early Access</th>
             <th className="text-center">Free to play</th>
             <th>Events</th>
             <th>Links</th>
@@ -200,6 +203,13 @@ export default function AppPage() {
                   </Link>
                 </td>
                 <td>{appPlatform.releaseState}</td>
+                <td className="text-center">
+                  <input
+                    type="checkbox"
+                    disabled
+                    defaultChecked={appPlatform.isEarlyAccess}
+                  />
+                </td>
                 <td className="text-center">
                   <input
                     type="checkbox"
@@ -286,6 +296,15 @@ export default function AppPage() {
                             )
                           )}
                         </select>
+                      </div>
+                      <div>
+                        <input
+                          type="checkbox"
+                          name="isEarlyAccess"
+                          id="isEarlyAccess"
+                          defaultChecked={appPlatform.isEarlyAccess}
+                        />
+                        <label htmlFor="isEarlyAccess">Early Access</label>
                       </div>
                       <div>
                         <input

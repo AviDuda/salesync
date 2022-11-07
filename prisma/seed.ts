@@ -271,6 +271,7 @@ async function seed() {
           data: {
             appId: app.id,
             platformId: platform.id,
+            isEarlyAccess: faker.datatype.boolean(),
             isFreeToPlay: faker.datatype.boolean(),
             releaseState: faker.helpers.arrayElement(
               Object.keys(PlatformReleaseState) as PlatformReleaseState[]

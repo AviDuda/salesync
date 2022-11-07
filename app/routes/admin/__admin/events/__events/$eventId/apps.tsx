@@ -444,6 +444,11 @@ export default function EventAppAdmin() {
                       `Release state: ${appPlatform.releaseState}`
                     );
                     platformTitle.push(
+                      `Early Access: ${
+                        appPlatform.isEarlyAccess ? "yes" : "no"
+                      }`
+                    );
+                    platformTitle.push(
                       `F2P: ${appPlatform.isFreeToPlay ? "yes" : "no"}`
                     );
                     if (appPlatform.eventAppPlatform.comment) {
@@ -479,6 +484,8 @@ export default function EventAppAdmin() {
                             >
                               {appPlatform.eventAppPlatform.status}
                             </Link>
+                            {appPlatform.isEarlyAccess && " | EA"}
+                            {appPlatform.isFreeToPlay && " | F2P"}
                           </p>
                           {appPlatform.eventAppPlatform.comment && (
                             <p>Has comment</p>

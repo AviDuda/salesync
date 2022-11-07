@@ -24,6 +24,7 @@ export async function action({ request, params }: ActionArgs) {
   const actionSchema = zfd.formData({
     platformId: zfd.text(),
     releaseState: zfd.text(z.nativeEnum(PlatformReleaseState)),
+    isEarlyAccess: zfd.text(z.literal("on").optional()),
     isFreeToPlay: zfd.text(z.literal("on").optional()),
     links: zfd
       .repeatable(
@@ -65,6 +66,7 @@ export async function action({ request, params }: ActionArgs) {
         appId: appId,
         platformId: data.platformId,
         releaseState: data.releaseState,
+        isEarlyAccess: data.isEarlyAccess === "on",
         isFreeToPlay: data.isFreeToPlay === "on",
       },
     });
@@ -138,6 +140,10 @@ export default function AddPlatformToApp() {
                 </option>
               ))}
             </select>
+          </div>
+          <div>
+            <input type="checkbox" name="isEarlyAccess" id="isEarlyAccess" />
+            <label htmlFor="isEarlyAccess">Early Access</label>
           </div>
           <div>
             <input type="checkbox" name="isFreeToPlay" id="isFreeToPlay" />

@@ -39,7 +39,6 @@ enum PlatformReleaseState {
   Released
   NewRelease
   Upcoming
-  EarlyAccess
   Unknown
 }
 
@@ -167,8 +166,9 @@ model AppPlatform {
   platform   Platform @relation(fields: [platformId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   platformId String
 
-  // Some games may be F2P only on mobile so keep this info in app platform
+  // Some apps may be F2P or in Early Access only on some platforms
   isFreeToPlay Boolean
+  isEarlyAccess Boolean @default(false)
 
   releaseState      PlatformReleaseState
   eventAppPlatforms EventAppPlatform[]

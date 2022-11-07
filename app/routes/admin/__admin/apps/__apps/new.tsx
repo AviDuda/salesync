@@ -29,7 +29,8 @@ export async function action({ request }: ActionArgs) {
             platformId: zfd.text(),
             checked: zfd.text(z.literal("on").optional()),
             releaseState: zfd.text(z.nativeEnum(PlatformReleaseState)),
-            f2p: zfd.text(z.literal("on").optional()),
+            isEarlyAccess: zfd.text(z.literal("on").optional()),
+            isFreeToPlay: zfd.text(z.literal("on").optional()),
             links: zfd.repeatable(
               z
                 .object({
@@ -83,7 +84,8 @@ export async function action({ request }: ActionArgs) {
     platforms.push({
       platformId: platform.platformId,
       releaseState: platform.releaseState,
-      isFreeToPlay: platform.f2p === "on",
+      isEarlyAccess: platform.isEarlyAccess === "on",
+      isFreeToPlay: platform.isFreeToPlay === "on",
     });
   });
 
@@ -250,10 +252,18 @@ export default function AddApp() {
                   <div>
                     <input
                       type="checkbox"
-                      name={`${name}.f2p`}
-                      id={`${id}_f2p`}
+                      name={`${name}.isEarlyAccess`}
+                      id={`${id}_isEarlyAccess`}
                     />
-                    <label htmlFor={`${id}_f2p`}>Free to play</label>
+                    <label htmlFor={`${id}_isEarlyAccess`}>Early Access</label>
+                  </div>
+                  <div>
+                    <input
+                      type="checkbox"
+                      name={`${name}.isFreeToPlay`}
+                      id={`${id}_isFreeToPlay`}
+                    />
+                    <label htmlFor={`${id}_isFreeToPlay`}>Free to play</label>
                   </div>
                   <details>
                     <summary>Toggle links</summary>

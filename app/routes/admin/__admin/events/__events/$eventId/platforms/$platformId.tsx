@@ -67,6 +67,7 @@ export default function EventPlatform() {
             <th>Studio</th>
             <th>Event status for platform</th>
             <th>Platform release state</th>
+            <th className="text-center">Early Access</th>
             <th className="text-center">Free to play</th>
           </tr>
         </thead>
@@ -87,6 +88,13 @@ export default function EventPlatform() {
               </td>
               <td>{eventAppPlatform.status}</td>
               <td>{eventAppPlatform.appPlatform.releaseState}</td>
+              <td className="text-center">
+                <input
+                  type="checkbox"
+                  disabled
+                  defaultChecked={eventAppPlatform.appPlatform.isEarlyAccess}
+                />
+              </td>
               <td className="text-center">
                 <input
                   type="checkbox"
