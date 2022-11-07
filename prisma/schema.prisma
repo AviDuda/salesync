@@ -25,6 +25,10 @@ enum UrlType {
 enum AppType {
   Game
   DLC
+  /// Used e.g. for different Steam packages (subs) or for regional store links
+  SKU
+  /// Used e.g. for Steam bundles
+  Collection
   Soundtrack
   Video
   Art
