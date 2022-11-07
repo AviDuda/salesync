@@ -26,6 +26,7 @@ export async function action({ request, params }: ActionArgs) {
     releaseState: zfd.text(z.nativeEnum(PlatformReleaseState)),
     isEarlyAccess: zfd.text(z.literal("on").optional()),
     isFreeToPlay: zfd.text(z.literal("on").optional()),
+    comment: zfd.text(z.string().optional()),
     links: zfd
       .repeatable(
         z
@@ -68,6 +69,7 @@ export async function action({ request, params }: ActionArgs) {
         releaseState: data.releaseState,
         isEarlyAccess: data.isEarlyAccess === "on",
         isFreeToPlay: data.isFreeToPlay === "on",
+        comment: data.comment,
       },
     });
 
@@ -148,6 +150,10 @@ export default function AddPlatformToApp() {
           <div>
             <input type="checkbox" name="isFreeToPlay" id="isFreeToPlay" />
             <label htmlFor="isFreeToPlay">Free to play</label>
+          </div>
+          <div className="grid grid-cols-[auto_auto] gap-4 items-center w-fit">
+            <label htmlFor="comment">Comment</label>
+            <textarea name="comment" id="comment" />
           </div>
           <details>
             <summary>Toggle links</summary>

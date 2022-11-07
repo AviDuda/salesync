@@ -56,8 +56,10 @@ export default function Platform() {
           <tr>
             <th>App</th>
             <th>Release state</th>
+            <th>Early Access</th>
             <th>Free to play</th>
             <th>Links</th>
+            <th>Comment</th>
           </tr>
         </thead>
         <tbody>
@@ -69,6 +71,13 @@ export default function Platform() {
                 </Link>
               </td>
               <td>{appPlatform.releaseState}</td>
+              <td>
+                <input
+                  type="checkbox"
+                  defaultChecked={appPlatform.isEarlyAccess}
+                  disabled
+                />
+              </td>
               <td>
                 <input
                   type="checkbox"
@@ -92,6 +101,11 @@ export default function Platform() {
                     </li>
                   ))}
                 </ul>
+              </td>
+              <td>
+                {appPlatform.comment && (
+                  <span title={appPlatform.comment}>has comment</span>
+                )}
               </td>
             </tr>
           ))}

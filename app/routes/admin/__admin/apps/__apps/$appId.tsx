@@ -43,6 +43,7 @@ export async function action({ request, params }: ActionArgs) {
       releaseState: zfd.text(z.nativeEnum(PlatformReleaseState)),
       isEarlyAccess: zfd.text(z.literal("on").optional()),
       isFreeToPlay: zfd.text(z.literal("on").optional()),
+      comment: zfd.text(z.string().optional()),
       links: zfd
         .repeatable(
           z
@@ -96,6 +97,7 @@ export async function action({ request, params }: ActionArgs) {
           releaseState: data.releaseState,
           isEarlyAccess: data.isEarlyAccess === "on",
           isFreeToPlay: data.isFreeToPlay === "on",
+          comment: data.comment,
           links: {
             deleteMany: { appPlatformId: data.appPlatformId },
           },
@@ -190,6 +192,7 @@ export default function AppPage() {
             <th className="text-center">Free to play</th>
             <th>Events</th>
             <th>Links</th>
+            <th>Comment</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -257,6 +260,11 @@ export default function AppPage() {
                   </ul>
                 </td>
                 <td>
+                  {appPlatform.comment && (
+                    <span title={appPlatform.comment}>has comment</span>
+                  )}
+                </td>
+                <td>
                   <Form method="get">
                     <button
                       type="submit"
@@ -314,6 +322,16 @@ export default function AppPage() {
                           defaultChecked={appPlatform.isFreeToPlay}
                         />
                         <label htmlFor="isFreeToPlay">Free to play</label>
+                      </div>
+                      <div>
+                        <div>
+                          <label htmlFor="comment">Comment</label>
+                        </div>
+                        <textarea
+                          name="comment"
+                          id="comment"
+                          defaultValue={appPlatform.comment ?? ""}
+                        />
                       </div>
                       <div className="flex flex-wrap gap-x-8 gap-y-4 w-fit">
                         {[...Array(MaxLinkCount).keys()].map((linkIndex) => (

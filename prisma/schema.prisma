@@ -169,6 +169,8 @@ model AppPlatform {
   isFreeToPlay Boolean
   isEarlyAccess Boolean @default(false)
 
+  comment String?
+
   releaseState      PlatformReleaseState
   eventAppPlatforms EventAppPlatform[]
   links             AppPlatformLink[]

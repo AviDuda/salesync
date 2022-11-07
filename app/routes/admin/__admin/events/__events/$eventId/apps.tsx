@@ -451,10 +451,16 @@ export default function EventAppAdmin() {
                     platformTitle.push(
                       `F2P: ${appPlatform.isFreeToPlay ? "yes" : "no"}`
                     );
+                    if (appPlatform.comment) {
+                      platformTitle.push("");
+                      platformTitle.push(
+                        `Platform comment:\n${appPlatform.comment}`
+                      );
+                    }
                     if (appPlatform.eventAppPlatform.comment) {
                       platformTitle.push("");
                       platformTitle.push(
-                        `Comment:\n${appPlatform.eventAppPlatform.comment}`
+                        `Event comment:\n${appPlatform.eventAppPlatform.comment}`
                       );
                     }
                   }
@@ -487,7 +493,8 @@ export default function EventAppAdmin() {
                             {appPlatform.isEarlyAccess && " | EA"}
                             {appPlatform.isFreeToPlay && " | F2P"}
                           </p>
-                          {appPlatform.eventAppPlatform.comment && (
+                          {(appPlatform.comment ||
+                            appPlatform.eventAppPlatform.comment) && (
                             <p>Has comment</p>
                           )}
                         </div>

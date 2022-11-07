@@ -31,6 +31,7 @@ export async function action({ request }: ActionArgs) {
             releaseState: zfd.text(z.nativeEnum(PlatformReleaseState)),
             isEarlyAccess: zfd.text(z.literal("on").optional()),
             isFreeToPlay: zfd.text(z.literal("on").optional()),
+            comment: zfd.text(z.string().optional()),
             links: zfd.repeatable(
               z
                 .object({
@@ -86,6 +87,7 @@ export async function action({ request }: ActionArgs) {
       releaseState: platform.releaseState,
       isEarlyAccess: platform.isEarlyAccess === "on",
       isFreeToPlay: platform.isFreeToPlay === "on",
+      comment: platform.comment,
     });
   });
 
@@ -235,35 +237,51 @@ export default function AddApp() {
                   />
                   <label htmlFor={`${id}_checked`}>{platform.name}</label>
                 </div>
-                <div className="px-4 py-1 bg-secondary-section w-fit">
-                  <div>
-                    <label htmlFor={`${id}_releaseState`}>Release state</label>
-                  </div>
-                  <select
-                    name={`${name}.releaseState`}
-                    id={`${id}_releaseState`}
-                  >
-                    {Object.entries(PlatformReleaseState).map(([key, name]) => (
-                      <option key={key} value={key}>
-                        {name}
-                      </option>
-                    ))}
-                  </select>
-                  <div>
-                    <input
-                      type="checkbox"
-                      name={`${name}.isEarlyAccess`}
-                      id={`${id}_isEarlyAccess`}
+                <div className="px-4 py-2 bg-secondary-section w-fit">
+                  <div className="flex flex-wrap gap-4 items-start">
+                    <div>
+                      <label htmlFor={`${id}_releaseState`}>
+                        Release state
+                      </label>
+                    </div>
+                    <select
+                      name={`${name}.releaseState`}
+                      id={`${id}_releaseState`}
+                    >
+                      {Object.entries(PlatformReleaseState).map(
+                        ([key, name]) => (
+                          <option key={key} value={key}>
+                            {name}
+                          </option>
+                        )
+                      )}
+                    </select>
+                    <div>
+                      <input
+                        type="checkbox"
+                        name={`${name}.isEarlyAccess`}
+                        id={`${id}_isEarlyAccess`}
+                      />
+                      <label htmlFor={`${id}_isEarlyAccess`}>
+                        Early Access
+                      </label>
+                    </div>
+                    <div>
+                      <input
+                        type="checkbox"
+                        name={`${name}.isFreeToPlay`}
+                        id={`${id}_isFreeToPlay`}
+                      />
+                      <label htmlFor={`${id}_isFreeToPlay`}>Free to play</label>
+                    </div>
+                    <div>
+                      <label htmlFor={`${id}_comment}`}>Comment</label>
+                    </div>
+                    <textarea
+                      name={`${name}_comment}`}
+                      id={`${name}.comment`}
+                      rows={1}
                     />
-                    <label htmlFor={`${id}_isEarlyAccess`}>Early Access</label>
-                  </div>
-                  <div>
-                    <input
-                      type="checkbox"
-                      name={`${name}.isFreeToPlay`}
-                      id={`${id}_isFreeToPlay`}
-                    />
-                    <label htmlFor={`${id}_isFreeToPlay`}>Free to play</label>
                   </div>
                   <details>
                     <summary>Toggle links</summary>
