@@ -96,8 +96,7 @@ model Password {
 
 model Studio {
   id      String  @id @default(cuid())
-  // name can't be unique as studios may have the same name
-  name    String
+  name    String  @unique
   comment String?
 
   members       StudioMember[] @relation("StudioMembers")
