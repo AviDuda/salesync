@@ -61,6 +61,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const users = await prisma.user.findMany({
     where: { id: { notIn: currentStudioMembers } },
     select: { id: true, name: true },
+    orderBy: { name: "asc" },
   });
 
   return json({ studio, users });
