@@ -1,7 +1,8 @@
 import type { Prisma, Studio } from "~/prisma-client";
 import { UrlType } from "~/prisma-client";
-import { Form } from "@remix-run/react";
+import { Form, useLoaderData } from "@remix-run/react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
+import { json } from "@remix-run/server-runtime";
 import { redirect } from "@remix-run/server-runtime";
 import { z } from "zod";
 import { zfd } from "zod-form-data";
@@ -15,6 +16,7 @@ export async function action({ request, params }: ActionArgs) {
 
   const schema = zfd.formData({
     name: zfd.text(),
+    mainContactId: zfd.text(z.string().optional()),
     comment: zfd.text(z.string().optional()),
     links: zfd
       .repeatable(
@@ -55,8 +57,21 @@ export async function action({ request, params }: ActionArgs) {
 
   await prisma.$transaction(async (tx) => {
     const studio = await tx.studio.create({
-      data: { name: data.name, comment: data.comment },
+      data: {
+        name: data.name,
+        comment: data.comment,
+      },
     });
+
+    if (data.mainContactId) {
+      const studioMember = await tx.studioMember.create({
+        data: { userId: data.mainContactId, studioId: studio.id },
+      });
+      await tx.studio.update({
+        where: { id: studio.id },
+        data: { mainContactId: studioMember.id },
+      });
+    }
 
     const links: Array<Prisma.StudioLinkCreateManyInput> = [];
     data.links.forEach((link) => {
@@ -88,12 +103,20 @@ export async function action({ request, params }: ActionArgs) {
 
 export async function loader({ request, params }: LoaderArgs) {
   await requireAdminUser(request);
-  return null;
+
+  const users = await prisma.user.findMany({
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  });
+
+  return json({ users });
 }
 
 export const handle: PageHandle = { breadcrumb: () => "New studio" };
 
 export default function NewStudio() {
+  const data = useLoaderData<typeof loader>();
+
   return (
     <div>
       <h3>New studio</h3>
@@ -101,6 +124,15 @@ export default function NewStudio() {
         <div className="grid grid-cols-[auto_auto] gap-4 w-fit">
           <label htmlFor="name">Studio name</label>
           <input type="text" name="name" id="name" />
+          <label htmlFor="mainContactId">Main contact</label>
+          <select name="mainContactId" id="mainContactId" defaultValue="">
+            <option value="">(no contact set)</option>
+            {data.users.map((user) => (
+              <option key={user.id} value={user.id}>
+                {user.name}
+              </option>
+            ))}
+          </select>
           <label htmlFor="comment">Comment</label>
           <textarea name="comment"></textarea>
         </div>
