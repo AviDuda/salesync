@@ -34,6 +34,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const users = await prisma.user.findMany({
     where: { coordinatorForEvents: { none: { eventId: params.eventId } } },
     select: { id: true, name: true },
+    orderBy: { name: "asc" },
   });
 
   return json({ users });
