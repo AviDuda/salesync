@@ -98,9 +98,7 @@ export async function action({ request, params }: ActionArgs) {
           isEarlyAccess: data.isEarlyAccess === "on",
           isFreeToPlay: data.isFreeToPlay === "on",
           comment: data.comment ?? null,
-          links: {
-            deleteMany: { appPlatformId: data.appPlatformId },
-          },
+          links: { deleteMany: {} },
         },
       });
       const links: Array<Prisma.AppPlatformLinkCreateManyInput> = [];

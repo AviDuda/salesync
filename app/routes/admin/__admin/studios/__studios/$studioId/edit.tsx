@@ -80,6 +80,7 @@ export async function action({ request, params }: ActionArgs) {
           name: data.name,
           mainContactId: data.mainContact,
           comment: data.comment ?? null,
+          links: { deleteMany: {} },
         },
       });
 
