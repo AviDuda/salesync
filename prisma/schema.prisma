@@ -253,7 +253,7 @@ model StudioMember {
   studio   Studio @relation("StudioMembers", fields: [studioId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   studioId String
 
-  position String
+  position String?
   comment  String?
 
   mainContactFor Studio[] @relation("StudioMainContact")

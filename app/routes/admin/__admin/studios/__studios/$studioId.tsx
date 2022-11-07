@@ -256,7 +256,7 @@ export default function Studio() {
                         type="text"
                         name="position"
                         id="position"
-                        defaultValue={member.position}
+                        defaultValue={member.position ?? undefined}
                       />
                       <label htmlFor="comment">Comment</label>
                       <textarea

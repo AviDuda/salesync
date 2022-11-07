@@ -15,7 +15,7 @@ export async function action({ request, params }: ActionArgs) {
 
   const schema = zfd.formData({
     userId: zfd.text(),
-    position: zfd.text(z.string()),
+    position: zfd.text(z.string().optional()),
     comment: zfd.text(z.string().optional()),
     setAsMainContact: zfd.text(z.literal("on").optional()),
   });
