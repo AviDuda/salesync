@@ -43,7 +43,7 @@ export async function action({ request, params }: ActionArgs) {
         name: data.appName,
         type: data.appType,
         studioId: data.studioId,
-        comment: data.comment,
+        comment: data.comment ?? null,
       },
     });
 

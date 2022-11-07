@@ -79,7 +79,7 @@ export async function action({ request, params }: ActionArgs) {
         data: {
           name: data.name,
           mainContactId: data.mainContact,
-          comment: data.comment,
+          comment: data.comment ?? null,
         },
       });
 

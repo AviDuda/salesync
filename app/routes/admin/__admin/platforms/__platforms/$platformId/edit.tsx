@@ -37,7 +37,11 @@ export async function action({ request, params }: ActionArgs) {
   if (data.intent === Intent.Save) {
     await prisma.platform.update({
       where: { id: params.platformId },
-      data: { name: data.name, url: data.url, comment: data.comment },
+      data: {
+        name: data.name,
+        url: data.url ?? null,
+        comment: data.comment ?? null,
+      },
     });
 
     return redirect(`/admin/platforms/${params.platformId}`);

@@ -27,8 +27,8 @@ export async function action({ request, params }: ActionArgs) {
     data: {
       studioId: params.studioId,
       userId: data.userId,
-      position: data.position,
-      comment: data.comment,
+      position: data.position ?? null,
+      comment: data.comment ?? null,
     },
     select: { id: true },
   });

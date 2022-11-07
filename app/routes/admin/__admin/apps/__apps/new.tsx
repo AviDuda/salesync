@@ -87,7 +87,7 @@ export async function action({ request }: ActionArgs) {
       releaseState: platform.releaseState,
       isEarlyAccess: platform.isEarlyAccess === "on",
       isFreeToPlay: platform.isFreeToPlay === "on",
-      comment: platform.comment,
+      comment: platform.comment ?? null,
     });
   });
 
@@ -99,7 +99,7 @@ export async function action({ request }: ActionArgs) {
         name: data.appName,
         type: data.appType,
         studioId: data.studioId,
-        comment: data.comment,
+        comment: data.comment ?? null,
         appPlatforms: {
           createMany: {
             data: platforms,
@@ -278,8 +278,8 @@ export default function AddApp() {
                       <label htmlFor={`${id}_comment}`}>Comment</label>
                     </div>
                     <textarea
-                      name={`${name}_comment}`}
-                      id={`${name}.comment`}
+                      name={`${name}.comment}`}
+                      id={`${id}_comment`}
                       rows={1}
                     />
                   </div>

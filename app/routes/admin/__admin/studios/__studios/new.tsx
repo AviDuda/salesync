@@ -59,7 +59,7 @@ export async function action({ request, params }: ActionArgs) {
     const studio = await tx.studio.create({
       data: {
         name: data.name,
-        comment: data.comment,
+        comment: data.comment ?? null,
       },
     });
 

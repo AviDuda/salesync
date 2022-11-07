@@ -80,7 +80,7 @@ export async function action({ request, params }: ActionArgs) {
       appPlatformId: appPlatform.appPlatformId,
       eventId,
       status: appPlatform.status,
-      comment: appPlatform.comment,
+      comment: appPlatform.comment ?? null,
     });
   });
 

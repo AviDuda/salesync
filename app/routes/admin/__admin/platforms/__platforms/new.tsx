@@ -20,7 +20,11 @@ export async function action({ request }: ActionArgs) {
   const data = schema.parse(formData);
 
   const platform = await prisma.platform.create({
-    data: { name: data.name, url: data.url, comment: data.comment },
+    data: {
+      name: data.name,
+      url: data.url ?? null,
+      comment: data.comment ?? null,
+    },
   });
 
   throw redirect(`/admin/platforms/${platform.id}`);

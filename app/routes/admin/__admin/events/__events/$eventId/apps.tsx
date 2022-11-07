@@ -78,7 +78,7 @@ export async function action({ request, params }: ActionArgs) {
         where: { id: data.eventAppPlatformId },
         data: {
           status: data.status as never,
-          comment: data.comment,
+          comment: data.comment ?? null,
         },
       });
       return redirect(request.url);
@@ -89,7 +89,7 @@ export async function action({ request, params }: ActionArgs) {
           eventId: params.eventId,
           appPlatformId: data.appPlatformId,
           status: data.status as never,
-          comment: data.comment,
+          comment: data.comment ?? null,
         },
       });
       return redirect(request.url);

@@ -97,7 +97,7 @@ export async function action({ request, params }: ActionArgs) {
           releaseState: data.releaseState,
           isEarlyAccess: data.isEarlyAccess === "on",
           isFreeToPlay: data.isFreeToPlay === "on",
-          comment: data.comment,
+          comment: data.comment ?? null,
           links: {
             deleteMany: { appPlatformId: data.appPlatformId },
           },

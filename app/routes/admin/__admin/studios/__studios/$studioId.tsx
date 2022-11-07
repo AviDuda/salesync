@@ -58,8 +58,8 @@ export async function action({ request, params }: ActionArgs) {
     await prisma.studioMember.update({
       where: { id: data.studioMemberId },
       data: {
-        position: data.position,
-        comment: data.comment,
+        position: data.position ?? null,
+        comment: data.comment ?? null,
       },
     });
 
