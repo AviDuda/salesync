@@ -1,23 +1,20 @@
 import type { App, AppPlatform, Platform, Prisma } from "~/prisma-client";
 import { EventAppPlatformStatus } from "~/prisma-client";
-import { Form, Link, useLoaderData } from "@remix-run/react";
+import { Form, Link, useActionData } from "@remix-run/react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
 import { redirect } from "@remix-run/server-runtime";
 import { json } from "@remix-run/server-runtime";
 import invariant from "tiny-invariant";
 import { z } from "zod";
 import { zfd } from "zod-form-data";
-import EmptyOption from "~/components/EmptyOption";
 import { prisma } from "~/db.server";
-import { getSession, requireAdminUser, sessionStorage } from "~/session.server";
+import { requireAdminUser } from "~/session.server";
 import { GroupBy } from "./index";
 
 export enum Intent {
   SetAppData = "set-app-data",
   Save = "save",
 }
-
-const sessionFlashKey = "event_platforms_app_data";
 
 const appDataItemSchema = z.object({
   appId: zfd.text(),
@@ -28,7 +25,6 @@ const appDataSchema = z.object({
   groupBy: zfd.text(z.nativeEnum(GroupBy)),
   appData: zfd.repeatableOfType(zfd.json(appDataItemSchema)),
 });
-type AppDataSchema = z.infer<typeof appDataSchema>;
 
 export async function action({ request, params }: ActionArgs) {
   await requireAdminUser(request);
@@ -113,21 +109,75 @@ export async function action({ request, params }: ActionArgs) {
         );
       }
 
-      // Store the data in session and use it in loader
-      const session = await getSession(request);
-      const sessionData: AppDataSchema = {
-        groupBy: data.groupBy,
-        appData: data.appData,
-      };
-      session.flash(sessionFlashKey, JSON.stringify(sessionData));
-      return json(
-        { appData: data.appData },
-        {
-          headers: {
-            "Set-Cookie": await sessionStorage.commitSession(session),
-          },
+      let appIdsToSearch: Array<App["id"]> = [];
+      let appPlatformIdsToSearch: Array<AppPlatform["id"]> = [];
+      data.appData.forEach((data) => {
+        appIdsToSearch.push(data.appId);
+        if (typeof data.appPlatformId !== "undefined") {
+          appPlatformIdsToSearch.push(data.appPlatformId);
         }
+      });
+
+      const appPlatforms = await prisma.appPlatform.findMany({
+        where: {
+          appId: { in: appIdsToSearch },
+          id:
+            appPlatformIdsToSearch.length > 0
+              ? { in: appPlatformIdsToSearch }
+              : undefined,
+          eventAppPlatforms: { none: { eventId: params.eventId } },
+        },
+        select: {
+          id: true,
+          platform: { select: { id: true, name: true } },
+          app: { select: { id: true, name: true } },
+        },
+      });
+
+      const appsMap = new Map<
+        App["id"],
+        {
+          id: App["id"];
+          name: App["name"];
+          appPlatforms: Array<{
+            id: AppPlatform["id"];
+            platform: { id: Platform["id"]; name: Platform["name"] };
+          }>;
+        }
+      >();
+
+      appPlatforms.forEach((appPlatform) => {
+        if (!appsMap.has(appPlatform.app.id)) {
+          appsMap.set(appPlatform.app.id, {
+            ...appPlatform.app,
+            appPlatforms: [],
+          });
+        }
+
+        const currentApp = appsMap.get(appPlatform.app.id)!;
+        appsMap.set(appPlatform.app.id, {
+          ...currentApp,
+          appPlatforms: [
+            ...currentApp.appPlatforms,
+            { id: appPlatform.id, platform: appPlatform.platform },
+          ],
+        });
+      });
+
+      appsMap.forEach((app) => {
+        appsMap.set(app.id, {
+          ...app,
+          appPlatforms: app.appPlatforms.sort((a, b) =>
+            a.platform.name.localeCompare(b.platform.name)
+          ),
+        });
+      });
+
+      const apps = [...appsMap.values()].sort((a, b) =>
+        a.name.localeCompare(b.name)
       );
+
+      return json({ groupBy: data.groupBy, apps });
     }
 
     case Intent.Save: {
@@ -168,92 +218,20 @@ export async function loader({ request, params }: LoaderArgs) {
   await requireAdminUser(request);
   invariant(params.eventId, "Invalid event ID");
 
-  // Try to parse app data we possibly got from action after the previous step
-  const session = await getSession(request);
-  const flashMessage = session.get(sessionFlashKey);
-  const parsedAppData = zfd.json(appDataSchema).safeParse(flashMessage);
-
-  if (!parsedAppData.success) {
-    // Silently go back a step
-    throw redirect(`/admin/events/${params.eventId}/apps/add-apps`);
-  }
-
-  let appIdsToSearch: Array<App["id"]> = [];
-  let appPlatformIdsToSearch: Array<AppPlatform["id"]> = [];
-  parsedAppData.data.appData.forEach((data) => {
-    appIdsToSearch.push(data.appId);
-    if (typeof data.appPlatformId !== "undefined") {
-      appPlatformIdsToSearch.push(data.appPlatformId);
-    }
-  });
-
-  const appPlatforms = await prisma.appPlatform.findMany({
-    where: {
-      appId: { in: appIdsToSearch },
-      id:
-        appPlatformIdsToSearch.length > 0
-          ? { in: appPlatformIdsToSearch }
-          : undefined,
-      eventAppPlatforms: { none: { eventId: params.eventId } },
-    },
-    select: {
-      id: true,
-      platform: { select: { id: true, name: true } },
-      app: { select: { id: true, name: true } },
-    },
-  });
-
-  const appsMap = new Map<
-    App["id"],
-    {
-      id: App["id"];
-      name: App["name"];
-      appPlatforms: Array<{
-        id: AppPlatform["id"];
-        platform: { id: Platform["id"]; name: Platform["name"] };
-      }>;
-    }
-  >();
-
-  appPlatforms.forEach((appPlatform) => {
-    if (!appsMap.has(appPlatform.app.id)) {
-      appsMap.set(appPlatform.app.id, {
-        ...appPlatform.app,
-        appPlatforms: [],
-      });
-    }
-
-    const currentApp = appsMap.get(appPlatform.app.id)!;
-    appsMap.set(appPlatform.app.id, {
-      ...currentApp,
-      appPlatforms: [
-        ...currentApp.appPlatforms,
-        { id: appPlatform.id, platform: appPlatform.platform },
-      ],
-    });
-  });
-
-  appsMap.forEach((app) => {
-    appsMap.set(app.id, {
-      ...app,
-      appPlatforms: app.appPlatforms.sort((a, b) =>
-        a.platform.name.localeCompare(b.platform.name)
-      ),
-    });
-  });
-
-  return json(
-    { groupBy: parsedAppData.data.groupBy, apps: [...appsMap.values()] },
-    {
-      headers: {
-        "Set-Cookie": await sessionStorage.commitSession(session),
-      },
-    }
-  );
+  return null;
 }
 
 export default function SelectPlatforms() {
-  const data = useLoaderData<typeof loader>();
+  const data = useActionData<typeof action>();
+
+  if (!data?.apps) {
+    return (
+      <div>
+        <p>You must select apps first!</p>
+        <Link to="..">Go back</Link>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -292,9 +270,8 @@ export default function SelectPlatforms() {
                         <select
                           name={`${name}.status`}
                           id={`${id}_status`}
-                          defaultValue=""
+                          defaultValue={EventAppPlatformStatus.OK_Confirmed}
                         >
-                          <EmptyOption />
                           {Object.entries(EventAppPlatformStatus).map(
                             ([key, name]) => (
                               <option key={key} value={key}>

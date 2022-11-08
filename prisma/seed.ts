@@ -22,8 +22,8 @@ async function seed() {
 
   const userCount = faker.datatype.number({ min: 5, max: 50 });
   const eventCount = faker.datatype.number({ min: 5, max: 15 });
-  const studioCount = faker.datatype.number({ min: 5, max: 20 });
-  const appCount = faker.datatype.number({ min: 10, max: 50 });
+  const studioCount = faker.datatype.number({ min: 10, max: 50 });
+  const appCount = faker.datatype.number({ min: 30, max: 500 });
 
   function capitalize(words: string) {
     return words
