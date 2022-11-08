@@ -63,5 +63,8 @@
     "**/bower_components": true,
     "**/*.code-search": true,
     "app/prisma-client": true
+  },
+  "yaml.schemas": {
+    "https://json.schemastore.org/github-workflow.json": "file:///Users/avi/dev/sales-tool/.github/workflows/deploy.yml"
   }
 }
