@@ -33,6 +33,18 @@ export async function loader({ request, params }: LoaderArgs) {
         );
         return appPlatform ? count + 1 : count;
       }, 0),
+      studioCount: [
+        ...new Set(
+          appData
+            .map((app) => {
+              const appPlatform = app.appPlatforms.find(
+                (ap) => ap.platformId === platform.id
+              );
+              return appPlatform ? app.studioId : null;
+            })
+            .filter((studioId) => studioId !== null)
+        ),
+      ].length,
     };
   });
 
@@ -135,23 +147,29 @@ export default function Event() {
       </p>
 
       <h3>Apps in the event</h3>
+      <p>Total {data.apps.length} apps</p>
       <p>
         See <Link to="apps">full list of apps</Link>
       </p>
 
       <h3>Platforms in the event</h3>
+      <p>Total {data.platforms.length} platforms</p>
       <div className="grid grid-cols-2 gap-x-8 w-fit">
         {data.platforms.map((platform) => (
           <Fragment key={platform.id}>
             <span>{platform.name}</span>
-            <Link to={`apps?filters[platform][]=${platform.id}`}>
-              {platform.appCount} apps
-            </Link>
+            <div>
+              <Link to={`apps?filters[platform][]=${platform.id}`}>
+                {platform.appCount} apps
+              </Link>
+              <span> by {platform.studioCount} studios</span>
+            </div>
           </Fragment>
         ))}
       </div>
 
       <h3>Platform state</h3>
+      <p>Total {data.appPlatformState.length} platform states</p>
       <div className="grid grid-cols-2 gap-x-8 w-fit">
         {data.appPlatformState.map((state) => (
           <Fragment key={state.status}>
@@ -164,6 +182,7 @@ export default function Event() {
       </div>
 
       <h3>Studios in the event</h3>
+      <p>Total {data.studios.length} studios</p>
       <p>
         <strong>Warning:</strong> This currently includes studios with games
         with a not OK_ platform state.
