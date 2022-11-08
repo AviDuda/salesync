@@ -3,7 +3,7 @@ import { EventAppPlatformStatus } from "~/prisma-client";
 import { Link, Outlet, useFetcher, useSearchParams } from "@remix-run/react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
 import { redirect } from "@remix-run/server-runtime";
-import { omit } from "lodash";
+import { concat, omit, uniq } from "lodash";
 import { Fragment } from "react";
 import { typedjson, useTypedLoaderData } from "remix-typedjson";
 import invariant from "tiny-invariant";
@@ -233,11 +233,14 @@ export default function EventAppAdmin() {
     filters: z
       .object({
         platform: z.string().array(),
+        studio: z.string().array(),
         status: z.nativeEnum(EventAppPlatformStatus).array(),
       })
       .partial()
       .optional(),
   });
+  type SearchParamsSchema = z.infer<typeof searchParamsSchema>;
+
   const parsedSearchParams = searchParamsSchema.safeParse(
     qs.parse(searchParams.toString())
   );
@@ -256,6 +259,13 @@ export default function EventAppAdmin() {
       { id: Platform["id"]; name: Platform["name"] }
     >();
     filteredAppData = filteredAppData.filter((app) => {
+      if (typeof filters.studio !== "undefined") {
+        const hasStudio = filters.studio.includes(app.studioId);
+        if (!hasStudio) {
+          return false;
+        }
+      }
+
       const index = app.appPlatforms.findIndex((appPlatform) => {
         let filterSuccesses = [];
 
@@ -299,12 +309,22 @@ export default function EventAppAdmin() {
     );
   }
 
-  function appendToQuery(
-    objToAppend: z.infer<typeof searchParamsSchema>
-  ): z.infer<typeof searchParamsSchema> {
+  function appendToQuery(objToAppend: SearchParamsSchema): SearchParamsSchema {
     const currentParams = parsedSearchParams.success
       ? parsedSearchParams.data
       : {};
+
+    function uniqFilter<T extends string = string>(
+      key: NonNullable<keyof NonNullable<SearchParamsSchema["filters"]>>
+    ): T[] {
+      return [
+        ...new Set(
+          ((currentParams.filters?.[key] as T[]) ?? []).concat(
+            (objToAppend.filters?.[key] as T[]) ?? []
+          )
+        ),
+      ];
+    }
 
     return {
       editAppId:
@@ -312,20 +332,9 @@ export default function EventAppAdmin() {
           ? undefined
           : objToAppend.editAppId ?? currentParams.editAppId,
       filters: {
-        platform: [
-          ...new Set(
-            (currentParams.filters?.platform ?? []).concat(
-              objToAppend.filters?.platform ?? []
-            )
-          ),
-        ],
-        status: [
-          ...new Set(
-            (currentParams.filters?.status ?? []).concat(
-              objToAppend.filters?.status ?? []
-            )
-          ),
-        ],
+        platform: uniqFilter("platform"),
+        status: uniqFilter("status"),
+        studio: uniqFilter("studio"),
       },
     };
   }
@@ -373,7 +382,11 @@ export default function EventAppAdmin() {
                   name =
                     data.platformsData.find((p) => p.id === val)?.name ??
                     "Unknown platform";
+                } else if (filterName === "studio") {
+                  const app = data.appData.find((app) => app.studioId === val);
+                  name = app ? app.studio.name : val;
                 }
+
                 return name;
               });
 
@@ -416,7 +429,16 @@ export default function EventAppAdmin() {
                     </Link>
                   </div>
                 </td>
-                <td>
+                <td className="w-max max-w-[10rem] truncate px-2">
+                  <span className="pr-1">
+                    <Link
+                      to={generateQueryLink({
+                        filters: { studio: [app.studioId] },
+                      })}
+                    >
+                      (f)
+                    </Link>
+                  </span>
                   <Link
                     to={`/admin/studios/${app.studioId}`}
                     className="text-ellipsis"

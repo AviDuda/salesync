@@ -204,7 +204,8 @@ export default function Event() {
         <ul>
           {data.studios.map((studio) => (
             <li key={studio.id}>
-              <Link to={`/admin/studios/${studio.id}`}>{studio.name}</Link>
+              <Link to={`/admin/studios/${studio.id}`}>{studio.name}</Link> (
+              <Link to={`apps?filters[studio][]=${studio.id}`}>filter</Link>)
             </li>
           ))}
         </ul>
