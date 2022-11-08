@@ -18,9 +18,6 @@ import { isPlatformStatusOK } from "~/models/events";
 import EmptyOption from "~/components/EmptyOption";
 
 enum Intent {
-  AddApp = "add-app",
-  AddAppStep2 = "add-app-2",
-  EditPlatforms = "edit-platforms",
   EditPlatform = "save-platform",
   AddPlatform = "add-platform",
   DeletePlatform = "delete-platform",
@@ -437,6 +434,8 @@ export default function EventAppAdmin() {
                     `Platform: ${platform.name}`,
                     isPlatformStatusOK(appPlatform?.eventAppPlatform.status)
                       ? "Included in event"
+                      : data.additionalPlatformsForApps[app.id].length === 0
+                      ? "Platform not available for this app"
                       : "Not included in event",
                   ];
                   if (appPlatform) {
@@ -471,33 +470,44 @@ export default function EventAppAdmin() {
                       className="text-center"
                       title={platformTitle.join("\n")}
                     >
-                      <input
-                        type="checkbox"
-                        disabled
-                        checked={isPlatformStatusOK(
-                          appPlatform?.eventAppPlatform.status
-                        )}
-                      />
-                      {!!appPlatform && (
-                        <div className="text-xs">
-                          <p>
-                            <Link
-                              to={generateQueryLink({
-                                filters: {
-                                  status: [appPlatform.eventAppPlatform.status],
-                                },
-                              })}
-                            >
-                              {appPlatform.eventAppPlatform.status}
-                            </Link>
-                            {appPlatform.isEarlyAccess && " | EA"}
-                            {appPlatform.isFreeToPlay && " | F2P"}
-                          </p>
-                          {(appPlatform.comment ||
-                            appPlatform.eventAppPlatform.comment) && (
-                            <p>Has comment</p>
-                          )}
-                        </div>
+                      {typeof appPlatform !== "undefined" ? (
+                        <>
+                          <input
+                            type="checkbox"
+                            disabled
+                            checked={isPlatformStatusOK(
+                              appPlatform?.eventAppPlatform.status
+                            )}
+                          />
+                          <div className="text-xs">
+                            <p>
+                              <Link
+                                to={generateQueryLink({
+                                  filters: {
+                                    status: [
+                                      appPlatform.eventAppPlatform.status,
+                                    ],
+                                  },
+                                })}
+                              >
+                                {appPlatform.eventAppPlatform.status}
+                              </Link>
+                              {appPlatform.isEarlyAccess && " | EA"}
+                              {appPlatform.isFreeToPlay && " | F2P"}
+                            </p>
+                            {(appPlatform.comment ||
+                              appPlatform.eventAppPlatform.comment) && (
+                              <p>Has comment</p>
+                            )}
+                          </div>
+                        </>
+                      ) : data.additionalPlatformsForApps[app.id].findIndex(
+                          (additionalApp) =>
+                            additionalApp.platform.id === platform.id
+                        ) > -1 ? (
+                        <input type="checkbox" disabled />
+                      ) : (
+                        "-"
                       )}
                     </td>
                   );

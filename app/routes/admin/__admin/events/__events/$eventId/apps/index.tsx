@@ -10,7 +10,7 @@ export async function loader({ request }: LoaderArgs) {
 export default function EventAppAdminIndex() {
   return (
     <p>
-      <Link to="add-app">Add app</Link>
+      <Link to="add-apps">Add apps</Link>
     </p>
   );
 }
