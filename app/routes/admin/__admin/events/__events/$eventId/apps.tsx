@@ -1,9 +1,9 @@
-import type { App, EventAppPlatform, Platform } from "~/prisma-client";
+import type { App, EventAppPlatform, Platform, Studio } from "~/prisma-client";
 import { EventAppPlatformStatus } from "~/prisma-client";
 import { Link, Outlet, useFetcher, useSearchParams } from "@remix-run/react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
 import { redirect } from "@remix-run/server-runtime";
-import { concat, omit, uniq } from "lodash";
+import { omit } from "lodash";
 import { Fragment } from "react";
 import { typedjson, useTypedLoaderData } from "remix-typedjson";
 import invariant from "tiny-invariant";
@@ -102,11 +102,12 @@ export async function getApps(eventId: string) {
     where: { eventId },
     include: {
       appPlatform: {
-        include: { platform: true, app: { include: { studio: true } } },
+        include: { platform: true, app: true },
       },
     },
     orderBy: { appPlatform: { app: { name: "asc" } } },
   });
+
   type AppData = typeof eventAppPlatforms[number]["appPlatform"]["app"] & {
     appPlatforms: Array<
       Omit<typeof eventAppPlatforms[number]["appPlatform"], "app"> & {
@@ -116,6 +117,8 @@ export async function getApps(eventId: string) {
   };
   const appsMap = new Map<App["id"], AppData>();
   const platformsMap = new Map<Platform["id"], Pick<Platform, "id" | "name">>();
+  // const studioIdsMap = new Set<Studio["id"]>;
+
   eventAppPlatforms.forEach((eventAppPlatform) => {
     if (!appsMap.has(eventAppPlatform.appPlatform.appId)) {
       appsMap.set(eventAppPlatform.appPlatform.appId, {
@@ -144,6 +147,8 @@ export async function getApps(eventId: string) {
       id: eventAppPlatform.appPlatform.platform.id,
       name: eventAppPlatform.appPlatform.platform.name,
     });
+
+    // studioIdsMap.add(eventAppPlatform.appPlatform.app.studioId);
   });
 
   return { appsMap, platformsMap };
@@ -209,12 +214,30 @@ export async function loader({ request, params }: LoaderArgs) {
     orderBy: { name: "asc" },
   });
 
+  const studioIdsMap = new Set<Studio["id"]>();
+  appData.forEach((app) => {
+    studioIdsMap.add(app.studioId);
+  });
+
+  const studioList = await prisma.studio.findMany({
+    where: { id: { in: [...studioIdsMap.values()] } },
+    select: {
+      id: true,
+      name: true,
+      mainContact: {
+        select: { user: { select: { id: true, name: true, email: true } } },
+      },
+    },
+    orderBy: { name: "asc" },
+  });
+
   return typedjson({
     appData,
     platformsData,
     appList,
     platformList,
     additionalPlatformsForApps,
+    studioList,
   });
 }
 
@@ -249,6 +272,7 @@ export default function EventAppAdmin() {
 
   let filteredPlatformsData = data.platformsData;
   let filteredAppData = data.appData;
+
   if (
     parsedSearchParams.success &&
     typeof parsedSearchParams.data.filters !== "undefined"
@@ -258,6 +282,7 @@ export default function EventAppAdmin() {
       Platform["id"],
       { id: Platform["id"]; name: Platform["name"] }
     >();
+
     filteredAppData = filteredAppData.filter((app) => {
       if (typeof filters.studio !== "undefined") {
         const hasStudio = filters.studio.includes(app.studioId);
@@ -297,6 +322,29 @@ export default function EventAppAdmin() {
     });
     filteredPlatformsData = [...platformsMap.values()];
   }
+
+  const filteredStudioMap = new Map<
+    Studio["id"],
+    typeof data["studioList"][number]
+  >();
+  filteredAppData.forEach((app) =>
+    filteredStudioMap.set(
+      app.studioId,
+      data.studioList.find((studio) => studio.id === app.studioId)!
+    )
+  );
+  const filteredStudioList = Object.fromEntries([
+    ...filteredStudioMap.entries(),
+  ]);
+
+  const studioEmails = Object.values(filteredStudioList)
+    .map((studio) =>
+      studio.mainContact
+        ? `"${studio.mainContact.user.name} - ${studio.name}" <${studio.mainContact.user.email}>`
+        : null
+    )
+    .filter((emails) => emails !== null)
+    .join(", ");
 
   function isSavingOrDeletingPlatform(
     fetcher: typeof fetcherPlatformEdit | typeof fetcherPlatformDelete,
@@ -353,7 +401,6 @@ export default function EventAppAdmin() {
       <div className="mb-4">
         <Outlet />
       </div>
-      <h4>App list</h4>
       {parsedSearchParams.success &&
         typeof parsedSearchParams.data.filters !== "undefined" &&
         Object.keys(parsedSearchParams.data.filters).length > 0 && (
@@ -384,7 +431,9 @@ export default function EventAppAdmin() {
                     "Unknown platform";
                 } else if (filterName === "studio") {
                   const app = data.appData.find((app) => app.studioId === val);
-                  name = app ? app.studio.name : val;
+                  name = app
+                    ? filteredStudioList[app.studioId]?.name ?? val
+                    : val;
                 }
 
                 return name;
@@ -398,6 +447,89 @@ export default function EventAppAdmin() {
             })}
           </div>
         )}
+
+      <p>
+        Currently viewing {filteredAppData.length} apps on{" "}
+        {filteredPlatformsData.length} platforms by{" "}
+        {[...new Set(filteredAppData.map((app) => app.studioId))].length}{" "}
+        studios
+      </p>
+
+      <h4>Studios</h4>
+      <details>
+        <summary>Toggle more info about studios</summary>
+        {parsedSearchParams.success &&
+          typeof parsedSearchParams.data.filters !== "undefined" &&
+          Object.keys(parsedSearchParams.data.filters).length > 0 && (
+            <div>
+              <h5>Filtered studios</h5>
+
+              <details>
+                <summary>Toggle filtered studio list</summary>
+                <ul>
+                  {Object.values(filteredStudioList).map((studio) => (
+                    <li key={studio.id}>
+                      <Link to={`/admin/studios/${studio.id}`}>
+                        {studio.name}
+                      </Link>{" "}
+                      (
+                      <Link
+                        to={generateQueryLink({
+                          filters: { studio: [studio.id] },
+                        })}
+                      >
+                        filter
+                      </Link>
+                      )
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            </div>
+          )}
+
+        <div>
+          <h5>Full studio list</h5>
+          <details className="w-full">
+            <summary>Toggle email formatting for filtered results</summary>
+            <div>
+              <a href={`mailto:undisclosed-recipients?bcc=${studioEmails}`}>
+                Send email
+              </a>
+            </div>
+            <textarea
+              rows={6}
+              className="w-1/2"
+              readOnly
+              value={studioEmails}
+            ></textarea>
+          </details>
+          <details>
+            <summary>Toggle full studio list</summary>
+            <p>
+              This list includes ALL studios, even when they aren't visible now.
+              It's here so you can filter by multiple studios.
+            </p>
+            <ul>
+              {Object.values(data.studioList).map((studio) => (
+                <li key={studio.id}>
+                  <Link to={`/admin/studios/${studio.id}`}>{studio.name}</Link>{" "}
+                  (
+                  <Link
+                    to={generateQueryLink({ filters: { studio: [studio.id] } })}
+                  >
+                    filter
+                  </Link>
+                  )
+                </li>
+              ))}
+            </ul>
+          </details>
+        </div>
+      </details>
+
+      <h4>App list</h4>
+
       <table className="table-auto w-full relative">
         <thead>
           <tr>
@@ -443,7 +575,9 @@ export default function EventAppAdmin() {
                     to={`/admin/studios/${app.studioId}`}
                     className="text-ellipsis"
                   >
-                    {app.studio.name}
+                    {data.studioList.find(
+                      (studio) => studio.id === app.studioId
+                    )?.name ?? app.studioId}
                   </Link>
                 </td>
                 <td>{app.type}</td>
