@@ -25,6 +25,13 @@ async function seed() {
   const studioCount = faker.datatype.number({ min: 10, max: 50 });
   const appCount = faker.datatype.number({ min: 30, max: 500 });
 
+  const adminEmail = "admin@example.com";
+  const password = "password";
+
+  console.log(
+    `⏳ Seed starting. Creating ${userCount} users, ${eventCount} events, ${studioCount} studios and ${appCount} apps.`
+  );
+
   function capitalize(words: string) {
     return words
       .split(" ")
@@ -50,21 +57,23 @@ async function seed() {
     });
   }
 
-  const passwordHash = await bcrypt.hash("password", 10);
+  console.log(`🦝 Creating ${userCount} users...`);
+
+  const passwordHash = await bcrypt.hash(password, 10);
 
   const users: User[] = [];
 
   users.push(
     await prisma.user.create({
       data: {
-        email: "admin@example.com",
+        email: adminEmail,
         name: "Admin",
         role: UserRole.Admin,
         password: { create: { hash: passwordHash } },
       },
     })
   );
-  for (let i = 0; i < userCount; i++) {
+  for (let i = 0; i < userCount - 1; i++) {
     users.push(
       await prisma.user.create({
         data: {
@@ -76,6 +85,8 @@ async function seed() {
       })
     );
   }
+
+  console.log(`🏢 Creating ${studioCount} studios...`);
 
   const studios: Array<{
     id: string;
@@ -118,6 +129,8 @@ async function seed() {
     studios.push(studio);
   }
 
+  console.log(`🎮 Creating platforms...`);
+
   const platforms = [
     await prisma.platform.upsert({
       where: { name: "Steam" },
@@ -153,6 +166,8 @@ async function seed() {
       create: { name: "iOS App Store" },
     }),
   ];
+
+  console.log(`👾 Creating ${appCount} apps...`);
 
   const apps: App[] = [];
   const appPlatforms: AppPlatform[] = [];
@@ -282,6 +297,8 @@ async function seed() {
       );
     });
   }
+
+  console.log(`📅 Creating ${eventCount} events...`);
 
   const events: Event[] = [];
 
