@@ -54,12 +54,13 @@ export async function getUser(request: Request) {
   throw await logout(request);
 }
 
-export async function requireUserId(
-  request: Request,
-  redirectTo: string = new URL(request.url).pathname
-) {
+export async function requireUserId(request: Request, redirectTo?: string) {
   const userId = await getUserId(request);
   if (!userId) {
+    if (!redirectTo) {
+      const url = new URL(request.url);
+      redirectTo = url.pathname + (url.search ?? "");
+    }
     const searchParams = new URLSearchParams([["redirectTo", redirectTo]]);
     throw redirect(`/login?${searchParams}`);
   }
