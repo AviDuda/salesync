@@ -1,4 +1,5 @@
 import type { App, EventAppPlatform, Platform, Studio } from "~/prisma-client";
+import { AppType } from "~/prisma-client";
 import { EventAppPlatformStatus } from "~/prisma-client";
 import { Link, Outlet, useFetcher, useSearchParams } from "@remix-run/react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
@@ -258,6 +259,7 @@ export default function EventAppAdmin() {
         platform: z.string().array(),
         studio: z.string().array(),
         status: z.nativeEnum(EventAppPlatformStatus).array(),
+        type: z.nativeEnum(AppType).array(),
       })
       .partial()
       .optional(),
@@ -287,6 +289,13 @@ export default function EventAppAdmin() {
       if (typeof filters.studio !== "undefined") {
         const hasStudio = filters.studio.includes(app.studioId);
         if (!hasStudio) {
+          return false;
+        }
+      }
+
+      if (typeof filters.type !== "undefined") {
+        const hasAppType = filters.type.includes(app.type);
+        if (!hasAppType) {
           return false;
         }
       }
@@ -383,6 +392,7 @@ export default function EventAppAdmin() {
         platform: uniqFilter("platform"),
         status: uniqFilter("status"),
         studio: uniqFilter("studio"),
+        type: uniqFilter("type"),
       },
     };
   }
@@ -421,8 +431,7 @@ export default function EventAppAdmin() {
             ).map(([filterName, values]) => {
               const names = values?.map((val) => {
                 let name = "";
-                if (filterName === "status") name = val;
-                else if (filterName === "platform") {
+                if (filterName === "platform") {
                   data.platformsData.find((p) => {
                     return p.id === val;
                   });
@@ -434,6 +443,8 @@ export default function EventAppAdmin() {
                   name = app
                     ? filteredStudioList[app.studioId]?.name ?? val
                     : val;
+                } else {
+                  name = val;
                 }
 
                 return name;
@@ -580,7 +591,13 @@ export default function EventAppAdmin() {
                     )?.name ?? app.studioId}
                   </Link>
                 </td>
-                <td>{app.type}</td>
+                <td>
+                  <Link
+                    to={generateQueryLink({ filters: { type: [app.type] } })}
+                  >
+                    {app.type}
+                  </Link>
+                </td>
                 {filteredPlatformsData.map((platform) => {
                   const appPlatform = app.appPlatforms.find(
                     (p) => p.platformId === platform.id
