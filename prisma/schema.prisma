@@ -38,6 +38,12 @@ enum AppType {
   Other
 }
 
+/// Some platforms offer additional exports etc.
+enum PlatformType {
+  Generic
+  Steam
+}
+
 /// Release state for an app on a specific platform
 enum PlatformReleaseState {
   Released
@@ -130,10 +136,11 @@ model StudioLink {
 
 /// Platforms like Steam, PS5 etc.
 model Platform {
-  id      String  @id @default(cuid())
-  name    String  @unique
+  id      String       @id @default(cuid())
+  name    String       @unique
   url     String?
   comment String?
+  type    PlatformType @default(Generic)
 
   /// Each app can have multiple platforms
   appPlatforms AppPlatform[]
@@ -170,7 +177,7 @@ model AppPlatform {
   platformId String
 
   // Some apps may be F2P or in Early Access only on some platforms
-  isFreeToPlay Boolean
+  isFreeToPlay  Boolean
   isEarlyAccess Boolean @default(false)
 
   comment String?

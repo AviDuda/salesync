@@ -1,4 +1,5 @@
 import type { App, AppPlatform, Event, Prisma, User } from "~/prisma-client";
+import { PlatformType } from "~/prisma-client";
 import { EventVisibility } from "~/prisma-client";
 import { UrlType } from "~/prisma-client";
 import { PlatformReleaseState } from "~/prisma-client";
@@ -46,8 +47,8 @@ async function seed() {
     );
   }
 
-  function generateLinks() {
-    return [...Array(faker.datatype.number(MaxLinkCount)).keys()].map(() => {
+  function generateLinks(maxCount = MaxLinkCount) {
+    return [...Array(faker.datatype.number(maxCount)).keys()].map(() => {
       return {
         url: faker.internet.url(),
         title: capitalize(faker.random.words()),
@@ -138,6 +139,7 @@ async function seed() {
       create: {
         name: "Steam",
         url: "https://store.steampowered.com/",
+        type: PlatformType.Steam,
       },
     }),
     await prisma.platform.upsert({
@@ -291,7 +293,37 @@ async function seed() {
             releaseState: faker.helpers.arrayElement(
               Object.keys(PlatformReleaseState) as PlatformReleaseState[]
             ),
-            links: { createMany: { data: generateLinks() } },
+            links: {
+              createMany: {
+                data:
+                  platform.type === PlatformType.Steam
+                    ? faker.helpers.arrayElement([
+                        () => generateLinks(),
+                        () => {
+                          const steamType = faker.helpers.arrayElement([
+                            "app",
+                            "sub",
+                            "bundle",
+                          ]);
+                          const steamId = faker.datatype.number();
+                          const steamRestUrl = faker.helpers.arrayElement([
+                            () => "",
+                            () => `/${faker.helpers.slugify(app.name)}`,
+                          ])();
+                          return [
+                            {
+                              url: `https://store.steampowered.com/${steamType}/${steamId}${steamRestUrl}`,
+                              title: "Store page",
+                              type: UrlType.StorePage,
+                              comment: generateComment(),
+                            },
+                            ...generateLinks(MaxLinkCount - 1),
+                          ];
+                        },
+                      ])()
+                    : generateLinks(),
+              },
+            },
           },
         })
       );

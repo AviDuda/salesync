@@ -5,6 +5,7 @@ import invariant from "tiny-invariant";
 import { z } from "zod";
 import { zfd } from "zod-form-data";
 import { prisma } from "~/db.server";
+import { PlatformType } from "~/prisma-client";
 import { requireAdminUser } from "~/session.server";
 import type { PageHandle } from "~/types/remix";
 import { useMatchesData } from "~/utils";
@@ -23,6 +24,7 @@ export async function action({ request, params }: ActionArgs) {
     zfd.formData({
       intent: zfd.text(z.literal(Intent.Save)),
       name: zfd.text(),
+      type: zfd.text(z.nativeEnum(PlatformType)),
       url: zfd.text(z.string().optional()),
       comment: zfd.text(z.string().optional()),
     }),
@@ -39,6 +41,7 @@ export async function action({ request, params }: ActionArgs) {
       where: { id: params.platformId },
       data: {
         name: data.name,
+        type: data.type,
         url: data.url ?? null,
         comment: data.comment ?? null,
       },
@@ -79,6 +82,14 @@ export default function PlatformEdit() {
             id="name"
             defaultValue={data.platform.name}
           />
+          <label htmlFor="type">Type</label>
+          <select name="type" id="type" defaultValue={data.platform.type}>
+            {Object.values(PlatformType).map((platformType) => (
+              <option key={platformType} value={platformType}>
+                {platformType}
+              </option>
+            ))}
+          </select>
           <label htmlFor="url">URL</label>
           <input
             type="text"

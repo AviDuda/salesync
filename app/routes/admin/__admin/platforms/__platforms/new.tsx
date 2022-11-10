@@ -4,6 +4,7 @@ import { redirect } from "@remix-run/server-runtime";
 import { z } from "zod";
 import { zfd } from "zod-form-data";
 import { prisma } from "~/db.server";
+import { PlatformType } from "~/prisma-client";
 import { requireAdminUser } from "~/session.server";
 import type { PageHandle } from "~/types/remix";
 
@@ -12,6 +13,7 @@ export async function action({ request }: ActionArgs) {
 
   const schema = zfd.formData({
     name: zfd.text(),
+    type: zfd.text(z.nativeEnum(PlatformType)),
     url: zfd.text(z.string().optional()),
     comment: zfd.text(z.string().optional()),
   });
@@ -22,6 +24,7 @@ export async function action({ request }: ActionArgs) {
   const platform = await prisma.platform.create({
     data: {
       name: data.name,
+      type: data.type,
       url: data.url ?? null,
       comment: data.comment ?? null,
     },
@@ -45,6 +48,14 @@ export default function NewPlatform() {
         <div className="grid grid-cols-[auto_auto] gap-4 w-fit">
           <label htmlFor="name">Platform name</label>
           <input type="text" name="name" id="name" />
+          <label htmlFor="type">Type</label>
+          <select name="type" id="type" defaultValue={PlatformType.Generic}>
+            {Object.values(PlatformType).map((platformType) => (
+              <option key={platformType} value={platformType}>
+                {platformType}
+              </option>
+            ))}
+          </select>
           <label htmlFor="url">URL</label>
           <input type="text" name="url" id="url" />
           <label htmlFor="comment">Comment</label>
