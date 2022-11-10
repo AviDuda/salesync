@@ -1,4 +1,5 @@
 import type { App, EventAppPlatform, Platform, Studio } from "~/prisma-client";
+import { PlatformType } from "~/prisma-client";
 import { AppType } from "~/prisma-client";
 import { EventAppPlatformStatus } from "~/prisma-client";
 import { Link, Outlet, useFetcher, useSearchParams } from "@remix-run/react";
@@ -103,7 +104,7 @@ export async function getApps(eventId: string) {
     where: { eventId },
     include: {
       appPlatform: {
-        include: { platform: true, app: true },
+        include: { platform: true, app: true, links: true },
       },
     },
     orderBy: { appPlatform: { app: { name: "asc" } } },
@@ -117,8 +118,10 @@ export async function getApps(eventId: string) {
     >;
   };
   const appsMap = new Map<App["id"], AppData>();
-  const platformsMap = new Map<Platform["id"], Pick<Platform, "id" | "name">>();
-  // const studioIdsMap = new Set<Studio["id"]>;
+  const platformsMap = new Map<
+    Platform["id"],
+    Pick<Platform, "id" | "name" | "type">
+  >();
 
   eventAppPlatforms.forEach((eventAppPlatform) => {
     if (!appsMap.has(eventAppPlatform.appPlatform.appId)) {
@@ -147,9 +150,8 @@ export async function getApps(eventId: string) {
     platformsMap.set(eventAppPlatform.appPlatform.platform.id, {
       id: eventAppPlatform.appPlatform.platform.id,
       name: eventAppPlatform.appPlatform.platform.name,
+      type: eventAppPlatform.appPlatform.platform.type,
     });
-
-    // studioIdsMap.add(eventAppPlatform.appPlatform.app.studioId);
   });
 
   return { appsMap, platformsMap };
@@ -173,7 +175,7 @@ export async function loader({ request, params }: LoaderArgs) {
       select: {
         appId: true,
         id: true,
-        platform: { select: { id: true, name: true } },
+        platform: { select: { id: true, name: true, type: true } },
       },
     })
   ).forEach((appPlatform) => {
@@ -211,7 +213,7 @@ export async function loader({ request, params }: LoaderArgs) {
         some: { eventAppPlatforms: { every: { eventId: params.eventId } } },
       },
     },
-    select: { id: true, name: true },
+    select: { id: true, name: true, type: true },
     orderBy: { name: "asc" },
   });
 
@@ -282,7 +284,7 @@ export default function EventAppAdmin() {
     const filters = parsedSearchParams.data.filters;
     const platformsMap = new Map<
       Platform["id"],
-      { id: Platform["id"]; name: Platform["name"] }
+      { id: Platform["id"]; name: Platform["name"]; type: Platform["type"] }
     >();
 
     filteredAppData = filteredAppData.filter((app) => {
@@ -323,6 +325,7 @@ export default function EventAppAdmin() {
           platformsMap.set(appPlatform.platform.id, {
             id: appPlatform.platform.id,
             name: appPlatform.platform.name,
+            type: appPlatform.platform.type,
           });
         }
         return isSuccessful;
@@ -537,6 +540,57 @@ export default function EventAppAdmin() {
             </ul>
           </details>
         </div>
+      </details>
+
+      <h4>Exports</h4>
+      <details>
+        <summary>Toggle exports</summary>
+        {filteredPlatformsData.findIndex(
+          (platform) => platform.type === PlatformType.Steam
+        ) > -1 && (
+          <details>
+            <summary>Export Steam sale data</summary>
+            <textarea
+              className="resize w-96 h-64"
+              defaultValue={filteredAppData
+                .flatMap((app) => {
+                  const steamSaleData: string[] = [];
+
+                  app.appPlatforms.forEach((appPlatform) => {
+                    if (appPlatform.platform.type !== PlatformType.Steam) {
+                      return;
+                    }
+
+                    appPlatform.links.forEach((link) => {
+                      const match = link.url.match(
+                        /\/store\.steampowered\.com\/(app|sub|bundle)\/(\d+)/
+                      );
+                      if (!match) {
+                        return;
+                      }
+
+                      const [, steamType, appid] = match;
+
+                      const tags: string[] = [];
+                      if (appPlatform.isEarlyAccess) tags.push("Early Access");
+                      if (appPlatform.isFreeToPlay) tags.push("Free to play");
+
+                      const row: string[] = [];
+                      row.push(appid);
+                      if (tags.length > 0) row.push(`"${tags.join(";")}"`);
+                      row.push(steamType);
+                      row.push(`// ${app.name} - ${link.title}`);
+
+                      steamSaleData.push(row.join("\t"));
+                    });
+                  });
+
+                  return steamSaleData;
+                })
+                .join("\n")}
+            ></textarea>
+          </details>
+        )}
       </details>
 
       <h4>App list</h4>
