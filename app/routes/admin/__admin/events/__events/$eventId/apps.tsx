@@ -552,7 +552,8 @@ export default function EventAppAdmin() {
             <summary>Export Steam sale data</summary>
             <textarea
               className="resize w-96 h-64"
-              defaultValue={filteredAppData
+              readOnly
+              value={filteredAppData
                 .flatMap((app) => {
                   const steamSaleData: string[] = [];
 
@@ -577,8 +578,8 @@ export default function EventAppAdmin() {
 
                       const row: string[] = [];
                       row.push(appid);
+                      row.push(steamType === "app" ? "game" : steamType);
                       if (tags.length > 0) row.push(`"${tags.join(";")}"`);
-                      row.push(steamType);
                       row.push(`// ${app.name} - ${link.title}`);
 
                       steamSaleData.push(row.join("\t"));
