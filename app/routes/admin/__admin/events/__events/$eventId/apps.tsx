@@ -573,8 +573,13 @@ export default function EventAppAdmin() {
                       const [, steamType, appid] = match;
 
                       const tags: string[] = [];
-                      if (appPlatform.isEarlyAccess) tags.push("Early Access");
-                      if (appPlatform.isFreeToPlay) tags.push("Free to play");
+                      tags.push(
+                        `[Custom] Release state: ${appPlatform.releaseState}`
+                      );
+                      if (appPlatform.isEarlyAccess)
+                        tags.push("[Custom] Early Access");
+                      if (appPlatform.isFreeToPlay)
+                        tags.push("[Custom] Free to play");
 
                       const row: string[] = [];
                       row.push(appid);
