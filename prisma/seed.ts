@@ -114,7 +114,7 @@ async function seed() {
 
     const studio = await prisma.studio.create({
       data: {
-        name: faker.company.name(),
+        name: faker.helpers.unique(faker.company.name),
         comment: generateComment(),
         members: { createMany: { data: members } },
         links: { createMany: { data: generateLinks() } },
