@@ -358,6 +358,64 @@ export default function EventAppAdmin() {
     .filter((emails) => emails !== null)
     .join(", ");
 
+  const steamSaleDataExportMissingLinks: Array<{
+    appId: string;
+    appName: string;
+    appPlatformId: string;
+    platformName: string;
+  }> = [];
+
+  const steamSaleDataExport = filteredAppData
+    .flatMap((app) => {
+      const steamSaleData: string[] = [];
+
+      app.appPlatforms.forEach((appPlatform) => {
+        if (appPlatform.platform.type !== PlatformType.Steam) {
+          return;
+        }
+
+        let hasSteamLink = false;
+
+        appPlatform.links.forEach((link) => {
+          const match = link.url.match(
+            /\/store\.steampowered\.com\/(app|sub|bundle)\/(\d+)/
+          );
+          if (!match) {
+            return;
+          }
+
+          hasSteamLink = true;
+
+          const [, steamType, appid] = match;
+
+          const tags: string[] = [];
+          tags.push(`[Custom] Release state: ${appPlatform.releaseState}`);
+          if (appPlatform.isEarlyAccess) tags.push("[Custom] Early Access");
+          if (appPlatform.isFreeToPlay) tags.push("[Custom] Free to play");
+
+          const row: string[] = [];
+          row.push(appid);
+          row.push(steamType === "app" ? "game" : steamType);
+          if (tags.length > 0) row.push(`"${tags.join(";")}"`);
+          row.push(`// ${app.name} - ${link.title}`);
+
+          steamSaleData.push(row.join("\t"));
+        });
+
+        if (!hasSteamLink) {
+          steamSaleDataExportMissingLinks.push({
+            appId: app.id,
+            appName: app.name,
+            appPlatformId: appPlatform.id,
+            platformName: appPlatform.platform.name,
+          });
+        }
+      });
+
+      return steamSaleData;
+    })
+    .join("\n");
+
   function isSavingOrDeletingPlatform(
     fetcher: typeof fetcherPlatformEdit | typeof fetcherPlatformDelete,
     eventAppPlatformId: EventAppPlatform["id"]
@@ -553,48 +611,23 @@ export default function EventAppAdmin() {
             <textarea
               className="resize w-96 h-64"
               readOnly
-              value={filteredAppData
-                .flatMap((app) => {
-                  const steamSaleData: string[] = [];
-
-                  app.appPlatforms.forEach((appPlatform) => {
-                    if (appPlatform.platform.type !== PlatformType.Steam) {
-                      return;
-                    }
-
-                    appPlatform.links.forEach((link) => {
-                      const match = link.url.match(
-                        /\/store\.steampowered\.com\/(app|sub|bundle)\/(\d+)/
-                      );
-                      if (!match) {
-                        return;
-                      }
-
-                      const [, steamType, appid] = match;
-
-                      const tags: string[] = [];
-                      tags.push(
-                        `[Custom] Release state: ${appPlatform.releaseState}`
-                      );
-                      if (appPlatform.isEarlyAccess)
-                        tags.push("[Custom] Early Access");
-                      if (appPlatform.isFreeToPlay)
-                        tags.push("[Custom] Free to play");
-
-                      const row: string[] = [];
-                      row.push(appid);
-                      row.push(steamType === "app" ? "game" : steamType);
-                      if (tags.length > 0) row.push(`"${tags.join(";")}"`);
-                      row.push(`// ${app.name} - ${link.title}`);
-
-                      steamSaleData.push(row.join("\t"));
-                    });
-                  });
-
-                  return steamSaleData;
-                })
-                .join("\n")}
+              value={steamSaleDataExport}
             ></textarea>
+            {steamSaleDataExportMissingLinks.length > 0 && (
+              <div>
+                <p>
+                  <strong>Warning:</strong> These apps with a Steam platform
+                  don't have any Steam links:
+                </p>
+                <ul>
+                  {steamSaleDataExportMissingLinks.map((app) => (
+                    <li key={app.appPlatformId}>
+                      <Link to={`/admin/apps/${app.appId}`}>{app.appName}</Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </details>
         )}
       </details>
