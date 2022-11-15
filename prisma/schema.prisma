@@ -157,7 +157,7 @@ model App {
 
   type AppType
 
-  studio   Studio @relation(fields: [studioId], references: [id])
+  studio   Studio @relation(fields: [studioId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   studioId String
 
   appPlatforms AppPlatform[]
