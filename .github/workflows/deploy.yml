@@ -119,6 +119,24 @@ jobs:
       - name: 📥 Download deps
         run: pnpm install --frozen-lockfile
 
+      - name: Get pnpm cache directory path
+        id: pnpm-cache-dir
+        run: echo "PNPM_STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Get cypress cache directory path
+        id: cypress-cache-dir
+        run: echo "CYPRESS_BIN_PATH=$(npx cypress cache path)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v3
+        id: pnpm-cache
+        with:
+          path: |
+            ${{ steps.pnpm-cache-dir.outputs.PNPM_STORE_PATH }}
+            ${{ steps.cypress-cache-dir.outputs.CYPRESS_BIN_PATH }}
+          key: ${{ runner.os }}-pnpm-cypress-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-cypress-
+
       - name: 🐳 Docker compose
         # the sleep is just there to give time for postgres to get started
         run: docker-compose up -d && sleep 3
@@ -132,12 +150,41 @@ jobs:
         run: pnpm run build
 
       - name: 🌳 Cypress run
-        uses: cypress-io/github-action@v4
+        uses: cypress-io/github-action@v5
         with:
           start: pnpm run start:mocks
           wait-on: "http://localhost:8811"
+          install: false
         env:
           PORT: "8811"
+
+      - name: Archive test screenshots
+        uses: actions/upload-artifact@v3
+        with:
+          name: screenshots
+          path: cypress/screenshots
+        if: ${{ failure() }}
+
+      - name: Archive test downloads
+        uses: actions/upload-artifact@v3
+        with:
+          name: downloads
+          path: cypress/downloads
+        if: ${{ failure() }}
+
+      - name: Archive test videos
+        uses: actions/upload-artifact@v3
+        with:
+          name: videos
+          path: cypress/videos
+        if: ${{ failure() }}
+
+      - name: Archive accessibility violations
+        uses: actions/upload-artifact@v3
+        with:
+          name: accessibility-violations
+          path: "**/a11y/"
+          if-no-files-found: "ignore"
 
   build:
     name: 🐳 Build
