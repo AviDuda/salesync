@@ -1,0 +1,24 @@
+// Recommended VS Code extensions
+{
+  "recommendations": [
+    // GitLens for Git improvements - line blame, repo visualisations
+    "eamodio.gitlens",
+    // EditorConfig support
+    "editorconfig.editorconfig",
+    // Prettier support
+    "esbenp.prettier-vscode",
+    // ESLint support
+    "dbaeumer.vscode-eslint",
+    // Tailwind
+    "bradlc.vscode-tailwindcss",
+    "austenc.tailwind-docs",
+    // Markdown linting
+    "DavidAnson.vscode-markdownlint",
+    // Conventional Commits
+    "vivaxy.vscode-conventional-commits"
+  ]
+}
+// Some extra extensions you may find helpful but aren't necessary:
+// bbugh.change-color-format - transforming color formats
+// wayou.vscode-toodoo-highlight - highlighting keywords in code (remove the extra o's in extension name)
+// vscode-icons-team.vscode-icons - file icons in explorer and open editors
