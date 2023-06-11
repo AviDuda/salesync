@@ -344,7 +344,7 @@ async function seed() {
       to: faker.date.future({ years: 2 }),
     });
     const runningTo = faker.date.soon({
-      days: faker.number.int(30),
+      days: faker.number.int({ min: 1, max: 30 }),
       refDate: runningFrom,
     });
 
