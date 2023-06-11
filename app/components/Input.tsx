@@ -24,7 +24,7 @@ export default function Input(props: InputProps) {
         <input
           {...props.input}
           {...getInputProps({ id })}
-          className="border py-1 px-2 w-96"
+          className="w-96 border px-2 py-1"
         />
         {error && (
           <p className="text-red-500">

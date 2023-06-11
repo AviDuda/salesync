@@ -1,3 +1,20 @@
+#!/usr/bin/env node
+/* eslint-disable @typescript-eslint/no-magic-numbers -- this entire file is magic */
+
+// eslint-disable-next-line import/no-extraneous-dependencies -- used only in dev
+import { fakerEN } from "@faker-js/faker";
+import bcrypt from "bcryptjs";
+
+import {
+  maybeNumber,
+  maybeText,
+  maybeTrademark,
+  maybeYear,
+  maybeYearBetween,
+} from "./faker";
+import { memoizeUnique } from "./faker-unique";
+
+import { MaxLinkCount } from "~/config";
 import type { App, AppPlatform, Event, Prisma, User } from "~/prisma-client";
 import { PlatformType } from "~/prisma-client";
 import { EventVisibility } from "~/prisma-client";
@@ -5,26 +22,16 @@ import { UrlType } from "~/prisma-client";
 import { PlatformReleaseState } from "~/prisma-client";
 import { AppType, EventAppPlatformStatus, UserRole } from "~/prisma-client";
 import { PrismaClient } from "~/prisma-client";
-import bcrypt from "bcryptjs";
-import { faker } from "@faker-js/faker";
-import { MaxLinkCount } from "~/config";
-import {
-  maybeNumber,
-  maybeYearBetween,
-  maybeText,
-  maybeTrademark,
-  maybeYear,
-} from "./faker";
 
 const prisma = new PrismaClient();
 
-async function seed() {
-  faker.setLocale("en");
+const faker = fakerEN;
 
-  const userCount = faker.datatype.number({ min: 5, max: 50 });
-  const eventCount = faker.datatype.number({ min: 5, max: 15 });
-  const studioCount = faker.datatype.number({ min: 10, max: 50 });
-  const appCount = faker.datatype.number({ min: 30, max: 500 });
+async function seed() {
+  const userCount = faker.number.int({ min: 5, max: 50 });
+  const eventCount = faker.number.int({ min: 5, max: 15 });
+  const studioCount = faker.number.int({ min: 10, max: 50 });
+  const appCount = faker.number.int({ min: 30, max: 500 });
 
   const adminEmail = "admin@example.com";
   const password = "password";
@@ -33,29 +40,24 @@ async function seed() {
     `⏳ Seed starting. Creating ${userCount} users, ${eventCount} events, ${studioCount} studios and ${appCount} apps.`
   );
 
-  function capitalize(words: string) {
-    return words
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-  }
-
   function generateComment() {
     return faker.helpers.maybe(
-      () => faker.lorem.paragraphs(faker.datatype.number({ min: 1, max: 5 })),
+      () => faker.lorem.paragraphs(faker.number.int({ min: 1, max: 5 })),
       { probability: 0.2 }
     );
   }
 
   function generateLinks(maxCount = MaxLinkCount) {
-    return [...Array(faker.datatype.number(maxCount)).keys()].map(() => {
-      return {
-        url: faker.internet.url(),
-        title: capitalize(faker.random.words()),
-        type: faker.helpers.arrayElement(Object.keys(UrlType) as UrlType[]),
-        comment: generateComment(),
-      };
-    });
+    return [...Array.from({ length: faker.number.int(maxCount) }).keys()].map(
+      () => {
+        return {
+          url: faker.internet.url(),
+          title: capitalize(faker.word.words()),
+          type: faker.helpers.arrayElement(Object.keys(UrlType) as UrlType[]),
+          comment: generateComment(),
+        };
+      }
+    );
   }
 
   console.log(`🦝 Creating ${userCount} users...`);
@@ -74,12 +76,12 @@ async function seed() {
       },
     })
   );
-  for (let i = 0; i < userCount - 1; i++) {
+  for (let index = 0; index < userCount - 1; index++) {
     users.push(
       await prisma.user.create({
         data: {
-          email: `user${i + 1}@example.com`,
-          name: faker.name.fullName(),
+          email: `user${index + 1}@example.com`,
+          name: faker.person.fullName(),
           role: faker.helpers.arrayElement(Object.keys(UserRole) as UserRole[]),
           password: { create: { hash: passwordHash } },
         },
@@ -96,9 +98,11 @@ async function seed() {
     }[];
   }> = [];
 
-  for (let i = 0; i < studioCount; i++) {
+  const uniqueStudioName = memoizeUnique(faker.company.name);
+
+  for (let index = 0; index < studioCount; index++) {
     const members: Prisma.StudioMemberCreateManyStudioInput[] = faker.helpers
-      .arrayElements(users, faker.datatype.number({ min: 1, max: 5 }))
+      .arrayElements(users, faker.number.int({ min: 1, max: 5 }))
       .map((user) => {
         return {
           userId: user.id,
@@ -114,7 +118,7 @@ async function seed() {
 
     const studio = await prisma.studio.create({
       data: {
-        name: faker.helpers.unique(faker.company.name),
+        name: uniqueStudioName(),
         comment: generateComment(),
         members: { createMany: { data: members } },
         links: { createMany: { data: generateLinks() } },
@@ -174,10 +178,10 @@ async function seed() {
   const apps: App[] = [];
   const appPlatforms: AppPlatform[] = [];
 
-  const minAppVersionNum = 2;
-  const maxAppVersionNum = 5;
+  const minAppVersionNumber = 2;
+  const maxAppVersionNumber = 5;
 
-  for (let i = 0; i < appCount; i++) {
+  for (let index = 0; index < appCount; index++) {
     const appName =
       faker.helpers.arrayElement([
         // Noun [Simulator|Manager|Tycoon][tm] [year|number]
@@ -191,15 +195,15 @@ async function seed() {
             faker.helpers.arrayElement([
               () =>
                 maybeNumber({
-                  min: minAppVersionNum,
-                  max: maxAppVersionNum,
+                  min: minAppVersionNumber,
+                  max: maxAppVersionNumber,
                   probability: 0.6,
                   space: "before",
                 }),
               () =>
                 maybeYearBetween({
-                  from: faker.date.past(4),
-                  to: faker.date.future(2),
+                  from: faker.date.past({ years: 4 }),
+                  to: faker.date.future({ years: 2 }),
                   probability: 0.6,
                   space: "before",
                 }),
@@ -237,8 +241,8 @@ async function seed() {
           maybeTrademark() +
           // Number suffix
           maybeNumber({
-            min: minAppVersionNum,
-            max: maxAppVersionNum,
+            min: minAppVersionNumber,
+            max: maxAppVersionNumber,
             probability: 0.2,
             space: "before",
           }),
@@ -282,7 +286,7 @@ async function seed() {
         probability: 0.7,
       }) ?? [];
 
-    platformsForApp.forEach(async (platform) => {
+    for (const platform of platformsForApp) {
       appPlatforms.push(
         await prisma.appPlatform.create({
           data: {
@@ -305,7 +309,7 @@ async function seed() {
                             "sub",
                             "bundle",
                           ]);
-                          const steamId = faker.datatype.number();
+                          const steamId = faker.number.int();
                           const steamRestUrl = faker.helpers.arrayElement([
                             () => "",
                             () => `/${faker.helpers.slugify(app.name)}`,
@@ -327,26 +331,29 @@ async function seed() {
           },
         })
       );
-    });
+    }
   }
 
   console.log(`📅 Creating ${eventCount} events...`);
 
   const events: Event[] = [];
 
-  for (let i = 0; i < eventCount; i++) {
-    const runningFrom = faker.date.between(
-      faker.date.past(4),
-      faker.date.future(2)
-    );
-    const runningTo = faker.date.soon(faker.datatype.number(30), runningFrom);
+  for (let index = 0; index < eventCount; index++) {
+    const runningFrom = faker.date.between({
+      from: faker.date.past({ years: 4 }),
+      to: faker.date.future({ years: 2 }),
+    });
+    const runningTo = faker.date.soon({
+      days: faker.number.int(30),
+      refDate: runningFrom,
+    });
 
     const eventName =
       // Prefix
       maybeText(() => {
         const prefix = faker.helpers.arrayElement([
           () => faker.word.adjective(),
-          () => faker.address.cityName(),
+          () => faker.location.city(),
         ])();
         return `${prefix} `;
       }) +
@@ -372,7 +379,7 @@ async function seed() {
 
     const coordinators: Prisma.EventCoordinatorCreateManyEventInput[] =
       faker.helpers
-        .arrayElements(users, faker.datatype.number({ min: 1, max: 5 }))
+        .arrayElements(users, faker.number.int({ min: 1, max: 5 }))
         .map((user) => {
           return { userId: user.id };
         });
@@ -413,10 +420,20 @@ async function seed() {
 }
 
 seed()
-  .catch((e) => {
-    console.error(e);
+  .catch((error) => {
+    console.error(error);
     process.exit(1);
   })
+  // eslint-disable-next-line unicorn/prefer-top-level-await -- this is a script
   .finally(async () => {
     await prisma.$disconnect();
   });
+
+function capitalize(words: string) {
+  return words
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+/* eslint-enable @typescript-eslint/no-magic-numbers */

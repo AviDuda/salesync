@@ -23,9 +23,9 @@ export default function ConformInput(props: InputProps) {
         <input
           {...props.input}
           autoComplete={props.autoComplete}
-          aria-invalid={typeof props.error !== "undefined"}
+          aria-invalid={props.error !== undefined}
           id={id}
-          className="border py-1 px-2 w-96"
+          className="w-96 border px-2 py-1"
         />
         {props.error && (
           <p className="text-red-500">

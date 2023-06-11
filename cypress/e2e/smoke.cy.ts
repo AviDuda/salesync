@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-extraneous-dependencies -- tests should run in dev
 import { faker } from "@faker-js/faker";
 
 describe("smoke tests", () => {

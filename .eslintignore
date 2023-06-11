@@ -1,5 +1,7 @@
-/node_modules
+/app/prisma-client
 /build
+/coverage
+/node_modules
 /public/build
 /postgres-data
-/app/prisma-client
+/tmp

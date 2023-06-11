@@ -6,7 +6,7 @@
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import { installGlobals } from "@remix-run/node";
 
-import { prisma } from "~/db.server";
+import { prisma } from "~/database.server";
 
 installGlobals();
 
@@ -34,4 +34,5 @@ async function deleteUser(email: string) {
   }
 }
 
+// eslint-disable-next-line unicorn/prefer-top-level-await -- this is a script
 deleteUser(process.argv[2]);

@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-extraneous-dependencies -- used in dev
 const { setupServer } = require("msw/node");
 
 const server = setupServer();

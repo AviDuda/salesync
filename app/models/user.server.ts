@@ -1,9 +1,11 @@
-import type { Password, Prisma, User } from "~/prisma-client";
 import bcrypt from "bcryptjs";
 
-import { prisma } from "~/db.server";
+import { prisma } from "~/database.server";
+import type { Password, Prisma, User } from "~/prisma-client";
 
 export type { User } from "~/prisma-client";
+
+const SaltLength = 10;
 
 export async function getUserById(id: User["id"]) {
   return prisma.user.findUnique({ where: { id } });
@@ -17,7 +19,7 @@ export async function createUser(
   user: Prisma.UserUncheckedCreateInput,
   password: Password["hash"]
 ) {
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt.hash(password, SaltLength);
 
   return prisma.user.create({
     data: {
@@ -36,7 +38,9 @@ export async function updateUser(
   user: Prisma.UserUncheckedUpdateInput,
   password?: string
 ) {
-  const hashedPassword = password ? await bcrypt.hash(password, 10) : undefined;
+  const hashedPassword = password
+    ? await bcrypt.hash(password, SaltLength)
+    : undefined;
   const passwordUpdate = hashedPassword
     ? {
         update: {

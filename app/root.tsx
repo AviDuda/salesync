@@ -1,4 +1,5 @@
-import type { LinksFunction, LoaderArgs, MetaFunction } from "@remix-run/node";
+import { cssBundleHref } from "@remix-run/css-bundle";
+import type { LinksFunction, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
   Links,
@@ -11,34 +12,28 @@ import {
   useMatches,
 } from "@remix-run/react";
 
+import { PageTitle } from "~/config";
 import {
   getSession,
+  getSessionGlobalMessage,
   getUser,
-  SessionFlashGlobalMessage,
   setHeadersForSessionCommit,
-} from "./session.server";
-import tailwindStylesheetUrl from "./styles/tailwind.css";
-import globalStylesheetUrl from "./styles/global.css";
-import type { PageHandle } from "./types/remix";
-import { PageTitle } from "./config";
+} from "~/session.server";
+import globalStylesheet from "~/styles/global.css";
+import type { PageHandle } from "~/types/remix";
 
 export const links: LinksFunction = () => {
   return [
-    { rel: "stylesheet", href: tailwindStylesheetUrl },
-    { rel: "stylesheet", href: globalStylesheetUrl },
+    { rel: "stylesheet", href: globalStylesheet },
+    ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
   ];
 };
-
-export const meta: MetaFunction = () => ({
-  charset: "utf-8",
-  viewport: "width=device-width,initial-scale=1",
-});
 
 export const handle: PageHandle = { breadcrumb: () => PageTitle };
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request);
-  const globalMessage = session.get(SessionFlashGlobalMessage);
+  const globalMessage = await getSessionGlobalMessage(request);
 
   return json(
     {
@@ -56,37 +51,40 @@ export default function App() {
   const titles = matches
     .filter(
       (match) =>
-        typeof match.handle !== "undefined" &&
+        match.handle !== undefined &&
         (typeof match.handle.breadcrumb === "function" ||
           typeof match.handle.title === "function")
     )
     .map((match) => {
       const breadcrumb =
         (match.handle as PageHandle).breadcrumb?.(match) ??
-        (match.handle as PageHandle).title?.(match) ??
-        null;
+        (match.handle as PageHandle).title?.(match);
       return breadcrumb;
     })
-    .filter((breadcrumb) => typeof breadcrumb === "string")
+    .filter(
+      (breadcrumb): breadcrumb is string => typeof breadcrumb === "string"
+    )
     .reverse();
 
   return (
     <html lang="en" className="h-full bg-zinc-900 text-white">
       <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
         <title>{titles.length > 0 ? titles.join(" | ") : PageTitle}</title>
         <Meta />
         <Links />
       </head>
-      <body className="h-screen overflow-hidden flex flex-col">
-        <header className="w-full text-center py-4 px-2">
+      <body className="flex h-screen flex-col overflow-hidden">
+        <header className="w-full px-2 py-4 text-center">
           <h1>{PageTitle}</h1>
         </header>
         {data.globalMessage && (
-          <div className="w-full bg-blue-100 px-4 py-2 mb-4">
+          <div className="mb-4 w-full bg-blue-100 px-4 py-2">
             {data.globalMessage}
           </div>
         )}
-        <div className="grow overflow-auto mb-4">
+        <div className="mb-4 grow overflow-auto">
           <Outlet />
         </div>
         <ScrollRestoration />

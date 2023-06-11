@@ -36,4 +36,5 @@ ${typedjson(user)}
   return user;
 }
 
+// eslint-disable-next-line unicorn/prefer-top-level-await -- this is a script
 create(process.argv[2], process.argv[3]);

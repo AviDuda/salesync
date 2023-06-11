@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const KEEP_AWAKE_MS = 10_000;
 
 /**

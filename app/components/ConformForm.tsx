@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 interface ConformFormProps extends FormProps {
   formComponent?: typeof Form;
   /** Form object returned from `useForm` */
-  form: ReturnType<typeof useForm>;
+  form: ReturnType<typeof useForm>[0];
   children: ReactNode;
 }
 
@@ -20,7 +20,7 @@ export default function ConformForm({
   return (
     <FormComponent {...rest} {...form.props}>
       {form.error && (
-        <p className="text-red-500 py-1">
+        <p className="py-1 text-red-500">
           <em>{form.error}</em>
         </p>
       )}

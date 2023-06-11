@@ -1,5 +1,7 @@
+import type { Submission } from "@conform-to/dom";
 import { useMatches } from "@remix-run/react";
 import { format } from "date-fns";
+import type { ReactNode } from "react";
 import { Fragment, useMemo } from "react";
 
 import type { User } from "~/models/user.server";
@@ -68,7 +70,10 @@ export function useUser(): User {
 }
 
 export function validateEmail(email: unknown): email is string {
-  return typeof email === "string" && email.length > 3 && email.includes("@");
+  const minLength = 3;
+  return (
+    typeof email === "string" && email.length > minLength && email.includes("@")
+  );
 }
 
 export function dateToYearMonthDay(date: Date) {
@@ -88,4 +93,60 @@ export function nl2br(text: string) {
       </Fragment>
     );
   });
+}
+
+export function formatError(error: unknown, defaultMessage = "Unknown error") {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (typeof error === "string") {
+    return error;
+  }
+  console.error("formatError: Unknown error type", error);
+  return defaultMessage;
+}
+
+/**
+ * Adds a global error to a Conform submission
+ */
+export function addSubmissionError<TSubmission>({
+  submission,
+  error,
+  defaultMessage = "Unknown error",
+}: {
+  submission: Submission<TSubmission>;
+  error: unknown;
+  defaultMessage?: string;
+}) {
+  return {
+    ...submission,
+    error: {
+      ...submission.error,
+      "": formatError(error, defaultMessage),
+    },
+  } as typeof submission;
+}
+
+/**
+ * Joins an array with a node
+ */
+export function jsxJoin(
+  array: ReactNode[],
+  separator: ReactNode = ", ",
+  ignoreEmpty = true
+) {
+  if (ignoreEmpty) {
+    array = array.filter((item) => item !== null && item !== undefined);
+  }
+
+  return array.length > 0
+    ? // eslint-disable-next-line unicorn/no-array-reduce -- need this here
+      array.reduce((result, item) => (
+        <>
+          {result}
+          {separator}
+          {item}
+        </>
+      ))
+    : null;
 }

@@ -5,10 +5,12 @@
 // as that new user.
 
 import { installGlobals } from "@remix-run/node";
+// eslint-disable-next-line import/no-extraneous-dependencies -- tests should run in dev
 import { parse } from "cookie";
 
-import { createUserSession } from "~/session.server";
 import { create } from "./create-user";
+
+import { createUserSession } from "~/session.server";
 
 installGlobals();
 
@@ -38,4 +40,5 @@ async function createAndLogin(email: string, role: string) {
   );
 }
 
+// eslint-disable-next-line unicorn/prefer-top-level-await -- this is a script
 createAndLogin(process.argv[2], process.argv[3]);

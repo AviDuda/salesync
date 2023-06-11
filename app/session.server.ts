@@ -1,10 +1,11 @@
-import { UserRole } from "~/prisma-client";
 import type { Session } from "@remix-run/node";
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
+import { StatusCodes } from "http-status-codes";
 import invariant from "tiny-invariant";
 
 import type { User } from "~/models/user.server";
 import { getUserById } from "~/models/user.server";
+import { UserRole } from "~/prisma-client";
 
 invariant(process.env.SESSION_SECRET, "SESSION_SECRET must be set");
 
@@ -33,7 +34,10 @@ export async function getSessionKey(request: Request, name: string) {
   return session.get(name);
 }
 export async function getSessionGlobalMessage(request: Request) {
-  return getSessionKey(request, SessionFlashGlobalMessage);
+  const globalMessage = await getSessionKey(request, SessionFlashGlobalMessage);
+  if (typeof globalMessage === "string") {
+    return globalMessage;
+  }
 }
 
 export async function getUserId(
@@ -46,7 +50,7 @@ export async function getUserId(
 
 export async function getUser(request: Request) {
   const userId = await getUserId(request);
-  if (userId === undefined) return null;
+  if (userId === undefined) return;
 
   const user = await getUserById(userId);
   if (user) return user;
@@ -61,8 +65,8 @@ export async function requireUserId(request: Request, redirectTo?: string) {
       const url = new URL(request.url);
       redirectTo = url.pathname + (url.search ?? "");
     }
-    const searchParams = new URLSearchParams([["redirectTo", redirectTo]]);
-    throw redirect(`/login?${searchParams}`);
+    const searchParameters = new URLSearchParams([["redirectTo", redirectTo]]);
+    throw redirect(`/login?${searchParameters}`);
   }
   return userId;
 }
@@ -70,7 +74,7 @@ export async function requireUserId(request: Request, redirectTo?: string) {
 export async function requireAdminUser(request: Request) {
   const user = await requireUser(request);
   if (user.role !== UserRole.Admin) {
-    throw redirect("/", 403);
+    throw redirect("/", StatusCodes.FORBIDDEN);
   }
   return user;
 }
@@ -97,12 +101,12 @@ export async function createUserSession({
 }) {
   const session = await getSession(request);
   session.set(USER_SESSION_KEY, userId);
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- constant
+  const maxAgeRemember = 60 * 60 * 24 * 7;
   return redirect(redirectTo, {
     headers: {
       "Set-Cookie": await sessionStorage.commitSession(session, {
-        maxAge: remember
-          ? 60 * 60 * 24 * 7 // 7 days
-          : undefined,
+        maxAge: remember ? maxAgeRemember : undefined,
       }),
     },
   });

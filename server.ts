@@ -1,21 +1,27 @@
-import path from "path";
-import express from "express";
-import compression from "compression";
-import morgan from "morgan";
+/* eslint-disable unicorn/prefer-module -- dynamic require */
+import path from "node:path";
+
 import { createRequestHandler } from "@remix-run/express";
+import compression from "compression";
+import express from "express";
+import { StatusCodes } from "http-status-codes";
+import morgan from "morgan";
+
+// eslint-disable-next-line @typescript-eslint/no-magic-numbers -- constant
+const HSTS_MAX_AGE_SECONDS = 60 * 60 * 24 * 365 * 100;
 
 const app = express();
 
-app.use((req, res, next) => {
+app.use((request, response, next) => {
   // helpful headers:
-  res.set("x-fly-region", process.env.FLY_REGION ?? "unknown");
-  res.set("Strict-Transport-Security", `max-age=${60 * 60 * 24 * 365 * 100}`);
+  response.set("x-fly-region", process.env.FLY_REGION ?? "unknown");
+  response.set("Strict-Transport-Security", `max-age=${HSTS_MAX_AGE_SECONDS}`);
 
   // /clean-urls/ -> /clean-urls
-  if (req.path.endsWith("/") && req.path.length > 1) {
-    const query = req.url.slice(req.path.length);
-    const safepath = req.path.slice(0, -1).replace(/\/+/g, "/");
-    res.redirect(301, safepath + query);
+  if (request.path.endsWith("/") && request.path.length > 1) {
+    const query = request.url.slice(request.path.length);
+    const safepath = request.path.slice(0, -1).replaceAll(/\/+/g, "/");
+    response.redirect(StatusCodes.MOVED_PERMANENTLY, safepath + query);
     return;
   }
   next();
@@ -25,8 +31,8 @@ app.use((req, res, next) => {
 // non-GET/HEAD/OPTIONS requests hit the primary region rather than read-only
 // Postgres DBs.
 // learn more: https://fly.io/docs/getting-started/multi-region-databases/#replay-the-request
-app.all("*", function getReplayResponse(req, res, next) {
-  const { method, path: pathname } = req;
+app.all("*", function getReplayResponse(request, response, next) {
+  const { method, path: pathname } = request;
   const { PRIMARY_REGION, FLY_REGION } = process.env;
 
   const isMethodReplayable = !["GET", "OPTIONS", "HEAD"].includes(method);
@@ -44,8 +50,8 @@ app.all("*", function getReplayResponse(req, res, next) {
     FLY_REGION,
   };
   console.info(`Replaying:`, logInfo);
-  res.set("fly-replay", `region=${PRIMARY_REGION}`);
-  return res.sendStatus(409);
+  response.set("fly-replay", `region=${PRIMARY_REGION}`);
+  return response.sendStatus(StatusCodes.CONFLICT);
 });
 
 app.use(compression());
@@ -72,16 +78,17 @@ app.all(
   "*",
   MODE === "production"
     ? createRequestHandler({ build: require(BUILD_DIR) })
-    : (...args) => {
+    : (...arguments_) => {
         purgeRequireCache();
         const requestHandler = createRequestHandler({
           build: require(BUILD_DIR),
           mode: MODE,
         });
-        return requestHandler(...args);
+        return requestHandler(...arguments_);
       }
 );
 
+// eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default port
 const port = process.env.PORT || 3000;
 
 app.listen(port, () => {
@@ -98,8 +105,8 @@ function purgeRequireCache() {
   // for you by default
   for (const key in require.cache) {
     if (key.startsWith(BUILD_DIR)) {
-      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete require.cache[key];
     }
   }
 }
+/* eslint-enable unicorn/prefer-module */
