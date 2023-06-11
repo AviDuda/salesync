@@ -2,17 +2,21 @@
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.updateImportsOnFileMove.enabled": "always",
 
-  "editor.formatOnSave": true,
-  "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
   "editor.codeActionsOnSave": {
-    "source.fixAll": true
+    "source.fixAll.prettier": true,
+    "source.fixAll.eslint": true
   },
 
-  // required by the Prettier ESLint extension
-  "editor.formatOnPaste": false,
-  "editor.formatOnSaveMode": "file",
+  // Prettier extension (esbenp.prettier-vscode)
 
-  "eslint.alwaysShowStatus": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnPaste": false, // required
+  "editor.formatOnType": false, // required
+  "editor.formatOnSave": true, // optional
+  "editor.formatOnSaveMode": "file", // required to format on save
+
+  // ESLint extension (dbaeumer.vscode-eslint)
+
   "eslint.packageManager": "pnpm",
   "eslint.workingDirectories": [
     {
@@ -36,9 +40,6 @@
   // Tailwind
   "files.associations": {
     "*.css": "tailwindcss"
-  },
-  "[tailwindcss]": {
-    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
   },
   "editor.quickSuggestions": {
     "strings": true
@@ -64,7 +65,6 @@
     "**/*.code-search": true,
     "app/prisma-client": true
   },
-  "yaml.schemas": {
-    "https://json.schemastore.org/github-workflow.json": "file:///Users/avi/dev/sales-tool/.github/workflows/deploy.yml"
-  }
+
+  "conventionalCommits.scopes": ["vscode"]
 }
