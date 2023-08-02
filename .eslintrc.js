@@ -1,3 +1,11 @@
+const sourceExtends = [
+  // https://github.com/sindresorhus/eslint-plugin-unicorn
+  "plugin:unicorn/all",
+
+  // https://mysticatea.github.io/eslint-plugin-eslint-comments/
+  "plugin:eslint-comments/recommended",
+];
+
 /** @type {import('@types/eslint').Linter.BaseConfig} */
 module.exports = {
   extends: [
@@ -16,15 +24,10 @@ module.exports = {
     "@remix-run/eslint-config/node",
     "@remix-run/eslint-config/jest-testing-library",
 
-    // https://github.com/sindresorhus/eslint-plugin-unicorn
-    "plugin:unicorn/all",
+    ...sourceExtends,
 
-    // https://mysticatea.github.io/eslint-plugin-eslint-comments/
-    "plugin:eslint-comments/recommended",
     // https://github.com/francoismassart/eslint-plugin-tailwindcss/
     "plugin:tailwindcss/recommended",
-    // https://github.com/cypress-io/eslint-plugin-cypress
-    "plugin:cypress/recommended",
     // https://github.com/prettier/eslint-config-prettier
     "prettier",
   ],
@@ -93,7 +96,7 @@ module.exports = {
     "import/no-extraneous-dependencies": [
       "error",
       {
-        devDependencies: ["**/*.{test,spec}.{js,jsx,ts,tsx}"],
+        devDependencies: ["**/*.{test,spec}.{js,jsx,ts,tsx}", "playwright/**"],
         peerDependencies: false,
         packageDir: __dirname,
       },
@@ -142,6 +145,21 @@ module.exports = {
       rules: {
         "json-files/require-unique-dependency-names": "error",
         "json-files/sort-package-json": "warn",
+      },
+    },
+    // E2E
+    {
+      files: ["playwright/**/*.{ts,js}"],
+      extends: [
+        ...sourceExtends,
+        "plugin:playwright/playwright-test",
+        "prettier",
+      ],
+      env: {
+        jest: false,
+      },
+      rules: {
+        "unicorn/prevent-abbreviations": ["off"],
       },
     },
     // Global configs

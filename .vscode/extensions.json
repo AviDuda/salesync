@@ -12,6 +12,8 @@
     // Tailwind
     "bradlc.vscode-tailwindcss",
     "austenc.tailwind-docs",
+    // Vitest
+    "ZixuanChen.vitest-explorer",
     // Markdown linting
     "DavidAnson.vscode-markdownlint",
     // Conventional Commits

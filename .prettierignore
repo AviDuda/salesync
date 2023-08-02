@@ -4,8 +4,7 @@ node_modules
 /public/build
 .env
 
-/cypress/screenshots
-/cypress/videos
+/playwright-results
 /postgres-data
 
 /app/styles/tailwind.css
